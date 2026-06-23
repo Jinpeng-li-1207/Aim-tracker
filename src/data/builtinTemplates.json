@@ -1,0 +1,27 @@
+[
+  {
+    "id": "streamer-daily",
+    "name": "主播日常一套",
+    "author": "社区参考",
+    "description": "中级靶 → 侧面100靶 → 高级靶，约 20 分钟",
+    "isBuiltIn": true,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "tasks": [
+      { "id": "d1", "order": 1, "testType": "speed", "difficulty": "medium", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 26, "instructions": "中级靶热身，专注每一枪爆头" },
+      { "id": "d2", "order": 2, "testType": "eliminate", "targetCount": 100, "side": "left", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetSeconds": 90, "instructions": "侧面 100 靶，练侧身急停出枪" },
+      { "id": "d3", "order": 3, "testType": "speed", "difficulty": "hard", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 22, "instructions": "高级靶收尾，检验当日状态" }
+    ]
+  },
+  {
+    "id": "beginner-foundation",
+    "name": "新手基础一套",
+    "author": "社区参考",
+    "description": "简单靶 + 正面50靶，建立肌肉记忆，约 12 分钟",
+    "isBuiltIn": true,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "tasks": [
+      { "id": "b1", "order": 1, "testType": "speed", "difficulty": "easy", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 28, "instructions": "简单靶，慢慢打准" },
+      { "id": "b2", "order": 2, "testType": "eliminate", "targetCount": 50, "side": "front", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetSeconds": 60, "instructions": "正面 50 靶，找节奏" }
+    ]
+  }
+]
