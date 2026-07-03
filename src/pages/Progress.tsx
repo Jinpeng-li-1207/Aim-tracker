@@ -33,7 +33,7 @@ export function Progress() {
         <span className="text-[11px] text-dim">练得越多越靠前</span>
       </div>
 
-      <ConfigBreakdown sessions={sessions} />
+      <ConfigBreakdown sessions={sessions} currentTier={rank.tier} />
 
       <div className="text-center text-[11px] text-dim">共 {sessions.length} 条训练记录</div>
     </div>

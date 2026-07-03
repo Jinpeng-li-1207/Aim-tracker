@@ -50,47 +50,54 @@ export interface ConfigRow {
   zh: string;
   en: string;
   testType: "speed" | "eliminate";
+  difficulty?: "easy" | "medium" | "hard";
+  targetCount?: 50 | 100;
   count: number;
-  best: number;
-  values: number[]; // 按时间先后
+  best: number | null;
+  points: { d: string; v: number }[]; // 按时间先后
 }
 
-// 按训练项配置聚合（速度按难度、消灭按靶数），练得多的排前
-export function configBreakdown(sessions: TrainingSession[]): ConfigRow[] {
-  const map = new Map<string, ConfigRow>();
+// 五个规范训练项（始终展示）
+export const CONFIG_DEFS: Omit<ConfigRow, "count" | "best" | "points">[] = [
+  { key: "speed-easy", zh: "简单靶", en: "Easy", testType: "speed", difficulty: "easy" },
+  { key: "speed-medium", zh: "中级靶", en: "Medium", testType: "speed", difficulty: "medium" },
+  { key: "speed-hard", zh: "困难靶", en: "Hard", testType: "speed", difficulty: "hard" },
+  { key: "elim-50", zh: "消灭 50", en: "Eliminate 50", testType: "eliminate", targetCount: 50 },
+  { key: "elim-100", zh: "消灭 100", en: "Eliminate 100", testType: "eliminate", targetCount: 100 },
+];
+
+// 全部 5 项：有数据的按次数降序在前，未训练的按固定顺序在后
+export function allConfigRows(sessions: TrainingSession[]): ConfigRow[] {
+  const data = new Map<string, { count: number; best: number; points: { d: string; v: number }[] }>();
   const sorted = [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 
   for (const s of sorted) {
     let key: string;
-    let zh: string;
-    let en: string;
-    let testType: "speed" | "eliminate";
     let value: number;
+    const isSpeed = s.testType === "speed";
     if (s.testType === "speed") {
-      testType = "speed";
       key = `speed-${s.difficulty}`;
-      zh = s.difficulty === "easy" ? "简单靶" : s.difficulty === "medium" ? "中级靶" : "困难靶";
-      en = s.difficulty.charAt(0).toUpperCase() + s.difficulty.slice(1);
       value = s.score;
     } else if (s.testType === "eliminate") {
-      testType = "eliminate";
       key = `elim-${s.targetCount}`;
-      zh = `消灭 ${s.targetCount}`;
-      en = `Eliminate ${s.targetCount}`;
       value = s.completionSeconds;
     } else {
       continue;
     }
-    const r =
-      map.get(key) ??
-      { key, zh, en, testType, count: 0, best: testType === "speed" ? -Infinity : Infinity, values: [] };
+    const r = data.get(key) ?? { count: 0, best: isSpeed ? -Infinity : Infinity, points: [] };
     r.count += 1;
-    r.values.push(value);
-    r.best = testType === "speed" ? Math.max(r.best, value) : Math.min(r.best, value);
-    map.set(key, r);
+    r.points.push({ d: s.createdAt.slice(5, 10), v: value });
+    r.best = isSpeed ? Math.max(r.best, value) : Math.min(r.best, value);
+    data.set(key, r);
   }
 
-  return [...map.values()].sort((a, b) => b.count - a.count);
+  const rows: ConfigRow[] = CONFIG_DEFS.map((def) => {
+    const d = data.get(def.key);
+    return { ...def, count: d?.count ?? 0, best: d ? d.best : null, points: d?.points ?? [] };
+  });
+
+  const idx = (k: string) => CONFIG_DEFS.findIndex((d) => d.key === k);
+  return rows.sort((a, b) => b.count - a.count || idx(a.key) - idx(b.key));
 }
 
 // 灵敏度分组：每个灵敏度下速度测试的平均命中
