@@ -1,1 +1,67 @@
 @import "tailwindcss";
+
+@theme {
+  --color-bg: #0e1419;
+  --color-bg2: #0b1015;
+  --color-surface: #16202a;
+  --color-surface2: #1b2733;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-line2: rgba(255, 255, 255, 0.14);
+  --color-brand: #ff4655;
+  --color-brand-dark: #c42b39;
+  --color-teal: #14d8c4;
+  --color-ink: #ece8e1;
+  --color-muted: #768079;
+  --color-dim: #4a555e;
+}
+
+html,
+body,
+#root {
+  background-color: #0e1419;
+  color: #ece8e1;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select,
+textarea {
+  background-color: #0e1419;
+  color: #ece8e1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #ff4655;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #4a555e;
+}
+
+select option {
+  background-color: #16202a;
+  color: #ece8e1;
+}
+
+/* 隐藏 number input 的上下箭头，保持简约 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

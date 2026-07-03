@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { WEAPONS, DIFFICULTIES, SIDES } from "@/lib/constants";
-import { TestTypeSelector } from "./TestTypeSelector";
+import { WEAPONS, DIFFICULTIES, SIDES, TEST_TYPE_META } from "@/lib/constants";
 import type { TestType, Difficulty, Side, TrainingSession } from "@/lib/types";
+
+const TEST_TYPES: TestType[] = ["speed", "eliminate", "practice"];
 
 export function SessionForm({ onSuccess }: { onSuccess: () => void }) {
   const [testType, setTestType] = useState<TestType>("speed");
@@ -20,17 +21,17 @@ export function SessionForm({ onSuccess }: { onSuccess: () => void }) {
   const [notes, setNotes] = useState("");
 
   const submit = async () => {
-    const base = { id: nanoid(), createdAt: new Date().toISOString(), weapon, botArmor, infiniteAmmo, strafe, notes };
+    const b = { id: nanoid(), createdAt: new Date().toISOString(), weapon, botArmor, infiniteAmmo, strafe, notes };
     let s: TrainingSession;
-    if (testType === "speed") s = { ...base, testType, difficulty, score };
-    else if (testType === "eliminate") s = { ...base, testType, targetCount, side, completionSeconds };
-    else s = { ...base, testType, durationMinutes };
+    if (testType === "speed") s = { ...b, testType, difficulty, score };
+    else if (testType === "eliminate") s = { ...b, testType, targetCount, side, completionSeconds };
+    else s = { ...b, testType, durationMinutes };
     await db.sessions.add(s);
     onSuccess();
   };
 
   const numField = (label: string, val: number, set: (n: number) => void, max = 9999) => (
-    <label className="flex flex-col gap-1 text-sm">
+    <label className="flex flex-col gap-1.5 text-xs text-muted">
       {label}
       <input
         type="number"
@@ -38,84 +39,94 @@ export function SessionForm({ onSuccess }: { onSuccess: () => void }) {
         max={max}
         value={val}
         onChange={(e) => set(Number(e.target.value))}
-        className="rounded border px-2 py-1"
+        className="rounded-lg px-3 py-2 text-sm text-ink"
       />
     </label>
   );
 
+  const pill = (active: boolean) =>
+    `rounded-lg py-2 text-xs transition-colors ${active ? "bg-brand text-white" : "bg-bg2 text-muted"}`;
+
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <TestTypeSelector value={testType} onChange={setTestType} />
-      <select value={weapon} onChange={(e) => setWeapon(e.target.value)} className="rounded border px-2 py-2">
-        {WEAPONS.map((w) => (
-          <option key={w}>{w}</option>
+    <div className="flex flex-col gap-3.5">
+      <div className="grid grid-cols-3 gap-2">
+        {TEST_TYPES.map((t) => (
+          <button key={t} onClick={() => setTestType(t)} className={pill(testType === t)}>
+            {TEST_TYPE_META[t].zh}
+            <span className="mt-0.5 block text-[10px] opacity-70">{TEST_TYPE_META[t].en}</span>
+          </button>
         ))}
-      </select>
+      </div>
+
+      <label className="flex flex-col gap-1.5 text-xs text-muted">
+        武器 Weapon
+        <select value={weapon} onChange={(e) => setWeapon(e.target.value)} className="rounded-lg px-3 py-2 text-sm text-ink">
+          {WEAPONS.map((w) => (
+            <option key={w}>{w}</option>
+          ))}
+        </select>
+      </label>
 
       {testType === "speed" && (
         <>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-            className="rounded border px-2 py-2"
-          >
+          <div className="grid grid-cols-3 gap-2">
             {DIFFICULTIES.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
-              </option>
-            ))}
-          </select>
-          {numField("命中数 (/30)", score, setScore, 30)}
-        </>
-      )}
-      {testType === "eliminate" && (
-        <>
-          <div className="flex gap-2">
-            {[50, 100].map((n) => (
-              <button
-                key={n}
-                onClick={() => setTargetCount(n as 50 | 100)}
-                className={`flex-1 rounded py-2 ${targetCount === n ? "bg-red-500 text-white" : "bg-gray-100"}`}
-              >
-                消灭 {n}
+              <button key={d.id} onClick={() => setDifficulty(d.id)} className={pill(difficulty === d.id)}>
+                {d.zh}
+                <span className="mt-0.5 block text-[10px] opacity-70">{d.en}</span>
               </button>
             ))}
           </div>
-          <select value={side} onChange={(e) => setSide(e.target.value as Side)} className="rounded border px-2 py-2">
-            {SIDES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          {numField("完成耗时 (秒)", completionSeconds, setCompletionSeconds, 600)}
+          {numField("命中数 Hits (/30)", score, setScore, 30)}
         </>
       )}
-      {testType === "practice" && numField("训练时长 (分钟)", durationMinutes, setDurationMinutes, 120)}
 
-      <div className="flex flex-wrap gap-3 text-sm">
-        <label className="flex items-center gap-1">
+      {testType === "eliminate" && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {[50, 100].map((n) => (
+              <button key={n} onClick={() => setTargetCount(n as 50 | 100)} className={pill(targetCount === n)}>
+                消灭 {n} · Eliminate {n}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {SIDES.map((sd) => (
+              <button key={sd.id} onClick={() => setSide(sd.id)} className={pill(side === sd.id)}>
+                {sd.zh}
+                <span className="mt-0.5 block text-[10px] opacity-70">{sd.en}</span>
+              </button>
+            ))}
+          </div>
+          {numField("完成耗时 Time (秒)", completionSeconds, setCompletionSeconds, 600)}
+        </>
+      )}
+
+      {testType === "practice" && numField("训练时长 Duration (分钟)", durationMinutes, setDurationMinutes, 120)}
+
+      <div className="flex flex-wrap gap-4 text-xs text-muted">
+        <label className="flex items-center gap-1.5">
           <input type="checkbox" checked={botArmor} onChange={(e) => setBotArmor(e.target.checked)} />
-          护甲
+          护甲 Armor
         </label>
-        <label className="flex items-center gap-1">
+        <label className="flex items-center gap-1.5">
           <input type="checkbox" checked={infiniteAmmo} onChange={(e) => setInfiniteAmmo(e.target.checked)} />
-          无限弹药
+          无限弹药 Ammo
         </label>
-        <label className="flex items-center gap-1">
+        <label className="flex items-center gap-1.5">
           <input type="checkbox" checked={strafe} onChange={(e) => setStrafe(e.target.checked)} />
-          假人移动
+          移动靶 Strafe
         </label>
       </div>
 
       <textarea
-        placeholder="备注（可选）"
+        placeholder="备注（可选） Notes"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        className="rounded border px-2 py-1 text-sm"
+        className="rounded-lg px-3 py-2 text-sm text-ink"
         rows={2}
       />
-      <button onClick={submit} className="rounded bg-red-500 py-2 font-semibold text-white hover:bg-red-600">
+      <button onClick={submit} className="rounded-xl bg-brand py-2.5 font-medium text-white active:scale-[0.98]">
         打卡记录
       </button>
     </div>

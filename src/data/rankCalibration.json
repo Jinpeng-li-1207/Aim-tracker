@@ -1,0 +1,12 @@
+{
+  "_note": "成绩↔段位校准表（社区/主播标准，可自行编辑）。speed=命中数(≥达标即该段)，eliminate=完成秒数(≤达标即该段)。iron 为兜底，无需列。",
+  "speed": {
+    "easy":   { "bronze": 20, "silver": 24, "gold": 27, "platinum": 29, "diamond": 30, "ascendant": 30, "immortal": 30, "radiant": 30 },
+    "medium": { "bronze": 15, "silver": 19, "gold": 23, "platinum": 26, "diamond": 28, "ascendant": 29, "immortal": 30, "radiant": 30 },
+    "hard":   { "bronze": 9,  "silver": 13, "gold": 17, "platinum": 21, "diamond": 24, "ascendant": 27, "immortal": 29, "radiant": 30 }
+  },
+  "eliminate": {
+    "50":  { "bronze": 95,  "silver": 80,  "gold": 66,  "platinum": 55,  "diamond": 46, "ascendant": 39, "immortal": 33, "radiant": 28 },
+    "100": { "bronze": 190, "silver": 160, "gold": 132, "platinum": 110, "diamond": 93, "ascendant": 80, "immortal": 68, "radiant": 58 }
+  }
+}
