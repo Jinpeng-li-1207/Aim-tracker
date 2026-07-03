@@ -17,7 +17,7 @@ function personalBests(sessions: TrainingSession[]) {
 export function Progress() {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
   const profile = useLiveQuery(() => db.profile.get("me"), []);
-  const rank = useMemo(() => computeRank(sessions, profile?.baselineTier), [sessions, profile]);
+  const rank = useMemo(() => computeRank(sessions, profile?.gameRank), [sessions, profile]);
   const pb = useMemo(() => personalBests(sessions), [sessions]);
 
   return (

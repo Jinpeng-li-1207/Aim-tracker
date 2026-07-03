@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Plus, ChevronDown } from "lucide-react";
 import { db } from "@/lib/db";
-import { computeRank } from "@/lib/rank";
+import { computeRank, computeForm } from "@/lib/rank";
 import { buildTodayDrills } from "@/lib/adaptiveTemplate";
 import { TargetHeader } from "@/components/train/TargetHeader";
 import { DrillCard } from "@/components/train/DrillCard";
@@ -14,9 +14,10 @@ export function Train() {
   const [customOpen, setCustomOpen] = useState(false);
 
   const rank = useMemo(
-    () => computeRank(sessions, profile?.baselineTier),
+    () => computeRank(sessions, profile?.gameRank),
     [sessions, profile],
   );
+  const form = useMemo(() => computeForm(sessions), [sessions]);
   const drills = useMemo(
     () => buildTodayDrills(rank.tier, sessions),
     [rank.tier, sessions],
@@ -24,13 +25,11 @@ export function Train() {
 
   return (
     <div className="flex flex-col gap-3 pb-6">
-      <TargetHeader rank={rank} drills={drills} />
+      <TargetHeader rank={rank} form={form} gameRank={profile?.gameRank} drills={drills} />
 
       <div className="mt-1 flex items-center justify-between px-4">
         <span className="text-sm text-ink">今日训练</span>
-        <span className="text-[11px] text-dim">冲{" "}
-          {drills.length ? "下一段位" : ""} 目标模板 · 自适应
-        </span>
+        <span className="text-[11px] text-dim">下一段位目标 · 自适应</span>
       </div>
 
       {drills.map((d) => (

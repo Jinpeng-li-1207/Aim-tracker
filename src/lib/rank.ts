@@ -1,6 +1,6 @@
 import calib from "../data/rankCalibration.json";
 import { TIER_ORDER } from "./constants";
-import type { Tier, TrainingSession, RankResult } from "./types";
+import type { Tier, TrainingSession, RankResult, FormState } from "./types";
 
 type CalibTable = Record<string, Record<string, number>>;
 const speedCalib = calib.speed as CalibTable;
@@ -40,20 +40,22 @@ export function tierForSession(s: TrainingSession): Tier | null {
   return null;
 }
 
-// 综合段位：近期可评级记录的段位均值；不足 3 条则回退到基线，再无则未定级
-export function computeRank(
-  sessions: TrainingSession[],
-  baseline?: Tier,
-): RankResult {
-  const rankable = [...sessions]
+// 可评级记录的段位序号（按时间先后）
+function rankableIndices(sessions: TrainingSession[]): number[] {
+  return [...sessions]
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .filter((s) => s.testType !== "practice")
-    .slice(-12);
-
-  const indices = rankable
     .map((s) => tierForSession(s))
     .filter((t): t is Tier => t !== null)
     .map((t) => tierIndex(t));
+}
+
+// 综合段位：近期可评级记录的段位均值；不足 3 条则用游戏段位冷启动，再无则未定级
+export function computeRank(
+  sessions: TrainingSession[],
+  gameRank?: Tier,
+): RankResult {
+  const indices = rankableIndices(sessions).slice(-12);
 
   if (indices.length >= 3) {
     const avg = indices.reduce((a, b) => a + b, 0) / indices.length;
@@ -65,13 +67,26 @@ export function computeRank(
       source: "records",
     };
   }
-  if (baseline) {
+  if (gameRank) {
     return {
-      tier: baseline,
-      index: tierIndex(baseline),
+      tier: gameRank,
+      index: tierIndex(gameRank),
       sampleCount: indices.length,
-      source: "baseline",
+      source: "gamerank",
     };
   }
   return { tier: "iron", index: 0, sampleCount: 0, source: "none" };
+}
+
+// 近期手感：近 3 次可评级记录的段位均值 vs 更早记录
+export function computeForm(sessions: TrainingSession[]): FormState {
+  const idx = rankableIndices(sessions);
+  if (idx.length < 4) return { label: "数据积累中", tone: "none" };
+  const recent = idx.slice(-3);
+  const prior = idx.slice(0, -3);
+  const avg = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length;
+  const delta = avg(recent) - avg(prior);
+  if (delta >= 0.5) return { label: "状态火热 · 上升中", tone: "up" };
+  if (delta <= -0.5) return { label: "手感下滑", tone: "down" };
+  return { label: "状态稳定", tone: "flat" };
 }

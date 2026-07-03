@@ -8,8 +8,8 @@ export function Me() {
   const profile = useLiveQuery(() => db.profile.get("me"), []);
   const sessionCount = useLiveQuery(() => db.sessions.count(), []) ?? 0;
 
-  const setBaseline = async (tier: Tier) => {
-    await db.profile.put({ id: "me", baselineTier: tier, updatedAt: new Date().toISOString() });
+  const setGameRank = async (tier: Tier) => {
+    await db.profile.put({ id: "me", gameRank: tier, updatedAt: new Date().toISOString() });
   };
 
   const exportData = async () => {
@@ -29,17 +29,17 @@ export function Me() {
   return (
     <div className="flex flex-col gap-5 p-4">
       <section>
-        <h2 className="mb-1 text-sm text-ink">自评当前段位</h2>
+        <h2 className="mb-1 text-sm text-ink">你的游戏段位（对战）</h2>
         <p className="mb-3 text-[11px] text-muted">
-          记录满 3 次后，段位会自动由实际成绩接管，自评仅作冷启动基线。
+          填你实际的 Valorant 对战段位。它与瞄准段位可以不同 —— 很多人靠意识吃饭。记录满 3 次后，瞄准段位会由实测成绩独立给出。
         </p>
         <div className="grid grid-cols-3 gap-2">
           {TIER_ORDER.map((t) => {
-            const active = profile?.baselineTier === t;
+            const active = profile?.gameRank === t;
             return (
               <button
                 key={t}
-                onClick={() => setBaseline(t)}
+                onClick={() => setGameRank(t)}
                 className={`rounded-lg py-2 text-xs transition-colors ${active ? "bg-surface2" : "bg-bg2"}`}
                 style={active ? { border: `1px solid ${TIER_META[t].color}`, color: TIER_META[t].color } : { color: "#768079" }}
               >

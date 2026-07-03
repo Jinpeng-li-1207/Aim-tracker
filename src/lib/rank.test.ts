@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { tierForSession, computeRank, nextTier } from "./rank";
+import { tierForSession, computeRank, computeForm, nextTier } from "./rank";
 import type { TrainingSession } from "./types";
 
 const base = {
@@ -46,14 +46,40 @@ describe("computeRank", () => {
     expect(r.source).toBe("none");
     expect(r.tier).toBe("iron");
   });
-  it("<3 records falls back to baseline", () => {
+  it("<3 records falls back to game rank", () => {
     const r = computeRank([speed("hard", 30, 1)], "gold");
-    expect(r.source).toBe("baseline");
+    expect(r.source).toBe("gamerank");
     expect(r.tier).toBe("gold");
   });
   it("averages tiers from >=3 records", () => {
     const r = computeRank([speed("hard", 30, 1), speed("hard", 30, 2), speed("hard", 30, 3)]);
     expect(r.source).toBe("records");
     expect(r.tier).toBe("radiant");
+  });
+});
+
+describe("computeForm", () => {
+  it("< 4 records → 数据积累中", () => {
+    expect(computeForm([speed("hard", 20, 1)]).tone).toBe("none");
+  });
+  it("rising recent scores → up", () => {
+    const r = computeForm([
+      speed("hard", 5, 1),
+      speed("hard", 5, 2),
+      speed("hard", 30, 3),
+      speed("hard", 30, 4),
+      speed("hard", 30, 5),
+    ]);
+    expect(r.tone).toBe("up");
+  });
+  it("declining recent scores → down", () => {
+    const r = computeForm([
+      speed("hard", 30, 1),
+      speed("hard", 30, 2),
+      speed("hard", 5, 3),
+      speed("hard", 5, 4),
+      speed("hard", 5, 5),
+    ]);
+    expect(r.tone).toBe("down");
   });
 });

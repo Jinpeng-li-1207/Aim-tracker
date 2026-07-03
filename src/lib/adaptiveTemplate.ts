@@ -32,7 +32,13 @@ function matchesDrill(s: TrainingSession, d: CoreDrill): boolean {
   return false;
 }
 
-// 根据当前段位构建"下一段位目标"的今日训练
+function valueOf(s: TrainingSession): number {
+  if (s.testType === "speed") return s.score;
+  if (s.testType === "eliminate") return s.completionSeconds;
+  return 0;
+}
+
+// 根据当前段位构建"下一段位目标"的今日训练（含当日全部尝试）
 export function buildTodayDrills(
   currentTier: Tier,
   sessions: TrainingSession[],
@@ -40,29 +46,27 @@ export function buildTodayDrills(
   const goal = nextTier(currentTier);
   return CORE_DRILLS.map((drill) => {
     const targetValue = targetFor(drill, goal);
-    const todays = sessions.filter(
-      (s) => isToday(s.createdAt) && matchesDrill(s, drill),
-    );
-    let todayBest: number | null = null;
-    if (todays.length > 0) {
-      if (drill.testType === "speed") {
-        todayBest = Math.max(
-          ...todays.map((s) => (s.testType === "speed" ? s.score : 0)),
-        );
-      } else {
-        todayBest = Math.min(
-          ...todays.map((s) =>
-            s.testType === "eliminate" ? s.completionSeconds : Infinity,
-          ),
-        );
-      }
-    }
-    const met =
-      todayBest !== null &&
-      (drill.testType === "speed"
-        ? todayBest >= targetValue
-        : todayBest <= targetValue);
-    return { drill, targetValue, todayBest, done: todayBest !== null, met };
+    const isSpeed = drill.testType === "speed";
+    const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
+
+    const attempts = sessions
+      .filter((s) => isToday(s.createdAt) && matchesDrill(s, drill))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map(valueOf);
+
+    const todayBest =
+      attempts.length === 0 ? null : isSpeed ? Math.max(...attempts) : Math.min(...attempts);
+    const metCount = attempts.filter(meets).length;
+
+    return {
+      drill,
+      targetValue,
+      attempts,
+      todayBest,
+      metCount,
+      done: attempts.length > 0,
+      met: todayBest !== null && meets(todayBest),
+    };
   });
 }
 

@@ -48,10 +48,10 @@ export type Tier =
   | "immortal"
   | "radiant";
 
-// 用户档案（自评基线段位）
+// 用户档案（自填的实际对战段位，可与瞄准段位不同）
 export interface Profile {
   id: string; // 固定 "me"
-  baselineTier: Tier;
+  gameRank?: Tier; // 游戏内对战段位（自填）
   updatedAt: string;
 }
 
@@ -60,7 +60,13 @@ export interface RankResult {
   tier: Tier;
   index: number; // 0–8
   sampleCount: number; // 参与计算的记录数
-  source: "records" | "baseline" | "none";
+  source: "records" | "gamerank" | "none";
+}
+
+// 近期手感/状态
+export interface FormState {
+  label: string;
+  tone: "up" | "down" | "flat" | "none";
 }
 
 // 组成"今日训练"的核心 drill（配置固定，目标随段位变化）
@@ -75,13 +81,15 @@ export interface CoreDrill {
   side?: Side; // eliminate
 }
 
-// 今日某个 drill 的实时状态
+// 今日某个 drill 的实时状态（支持多次尝试，健身"组"式）
 export interface TodayDrill {
   drill: CoreDrill;
   targetValue: number; // 目标（speed=命中数 / eliminate=秒）
+  attempts: number[]; // 今日全部尝试成绩（按时间先后）
   todayBest: number | null;
+  metCount: number; // 今日达标次数
   done: boolean;
-  met: boolean;
+  met: boolean; // 今日最佳是否达标
 }
 
 // 练枪模板

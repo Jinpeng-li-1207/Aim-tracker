@@ -6,7 +6,7 @@ import { drillLabel } from "@/lib/adaptiveTemplate";
 import type { TodayDrill, TrainingSession } from "@/lib/types";
 
 export function DrillCard({ today }: { today: TodayDrill }) {
-  const { drill, targetValue, todayBest, met } = today;
+  const { drill, targetValue, attempts, metCount, met } = today;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
 
@@ -14,6 +14,7 @@ export function DrillCard({ today }: { today: TodayDrill }) {
   const isSpeed = drill.testType === "speed";
   const unit = isSpeed ? "/30 命中" : "秒";
   const targetText = isSpeed ? `≥ ${targetValue}/30` : `≤ ${targetValue}s`;
+  const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
 
   const submit = async () => {
     const n = Number(value);
@@ -43,10 +44,8 @@ export function DrillCard({ today }: { today: TodayDrill }) {
     setOpen(false);
   };
 
-  const borderClass = met ? "border-teal/40" : "border-line";
-
   return (
-    <div className={`mx-4 rounded-xl border bg-surface p-3 ${borderClass}`}>
+    <div className={`mx-4 rounded-xl border bg-surface p-3 ${met ? "border-teal/40" : "border-line"}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           {met ? (
@@ -60,31 +59,49 @@ export function DrillCard({ today }: { today: TodayDrill }) {
             </div>
             <div className="mt-0.5 text-[11px] text-muted">
               目标 {targetText}
-              {drill.strafe && " · 移动靶 Strafe"}
-              {drill.botArmor && " · 护甲 Armor"}
-              {todayBest !== null && (
-                <span className={met ? "text-teal" : "text-brand"}>
-                  {" "}· 今日 {todayBest}
-                  {isSpeed ? "/30" : "s"}
+              {drill.strafe && " · 移动靶"}
+              {drill.botArmor && " · 护甲"}
+              {attempts.length > 0 && (
+                <span className="text-ink">
+                  {" "}· 达标 <span className={metCount > 0 ? "text-teal" : "text-brand"}>{metCount}</span>/{attempts.length} 次
                 </span>
               )}
             </div>
           </div>
         </div>
-        {!open && (
+        {!open ? (
           <button
             onClick={() => setOpen(true)}
-            className="rounded-lg bg-brand px-3 py-1.5 text-[11px] font-medium text-white active:scale-95"
+            className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-[11px] font-medium text-white active:scale-95"
           >
-            填成绩
+            {attempts.length > 0 ? "再记一次" : "填成绩"}
           </button>
-        )}
-        {open && (
-          <button onClick={() => setOpen(false)} className="p-1 text-dim">
+        ) : (
+          <button onClick={() => setOpen(false)} className="shrink-0 p-1 text-dim">
             <X size={16} />
           </button>
         )}
       </div>
+
+      {attempts.length > 0 && (
+        <div className="mt-3 flex gap-1.5">
+          {attempts.map((v, i) => {
+            const ok = meets(v);
+            return (
+              <div
+                key={i}
+                className="flex-1 rounded-lg border bg-bg2 py-1.5 text-center"
+                style={{ borderColor: ok ? "rgba(20,216,196,0.35)" : "rgba(255,255,255,0.08)" }}
+              >
+                <div className={`text-sm ${ok ? "text-teal" : "text-muted"}`}>{v}</div>
+                <div className="text-[9px] text-dim">
+                  第{i + 1}组{ok ? " ✓" : ""}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {open && (
         <div className="mt-3 flex items-center gap-2">
@@ -95,7 +112,7 @@ export function DrillCard({ today }: { today: TodayDrill }) {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={isSpeed ? "命中数" : "耗时秒"}
-            className="flex-1 rounded-lg px-3 py-2 text-sm"
+            className="flex-1 rounded-lg px-3 py-2 text-sm text-ink"
           />
           <span className="text-[11px] text-muted">{unit}</span>
           <button
