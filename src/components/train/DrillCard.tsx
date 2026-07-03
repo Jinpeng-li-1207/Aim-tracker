@@ -1,14 +1,21 @@
 import { useState } from "react";
 import { nanoid } from "nanoid";
-import { CheckCircle2, Circle, X } from "lucide-react";
+import { CheckCircle2, Circle, X, Trophy } from "lucide-react";
 import { db } from "@/lib/db";
 import { drillLabel } from "@/lib/adaptiveTemplate";
 import type { TodayDrill, TrainingSession } from "@/lib/types";
 
-export function DrillCard({ today, templateId }: { today: TodayDrill; templateId?: string }) {
-  const { drill, targetValue, attempts, metCount, met } = today;
+interface Props {
+  today: TodayDrill;
+  templateId?: string;
+  sensitivity?: number;
+}
+
+export function DrillCard({ today, templateId, sensitivity }: Props) {
+  const { drill, targetValue, attempts, recentBest, allTimeBest, metCount, met } = today;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [pb, setPb] = useState(false);
 
   const label = drillLabel(drill);
   const isSpeed = drill.testType === "speed";
@@ -16,9 +23,17 @@ export function DrillCard({ today, templateId }: { today: TodayDrill; templateId
   const targetText = isSpeed ? `≥ ${targetValue}/30` : `≤ ${targetValue}s`;
   const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
 
+  const gapText = (() => {
+    if (met || recentBest === null) return null;
+    const g = isSpeed ? targetValue - recentBest : recentBest - targetValue;
+    if (g <= 0) return null;
+    return isSpeed ? `距目标还差 +${g}` : `再快 ${g}s 达标`;
+  })();
+
   const submit = async () => {
     const n = Number(value);
     if (!value || Number.isNaN(n)) return;
+    const isPb = allTimeBest === null || (isSpeed ? n > allTimeBest : n < allTimeBest);
     const base = {
       id: nanoid(),
       createdAt: new Date().toISOString(),
@@ -26,6 +41,7 @@ export function DrillCard({ today, templateId }: { today: TodayDrill; templateId
       botArmor: drill.botArmor,
       infiniteAmmo: true,
       strafe: drill.strafe,
+      ...(sensitivity !== undefined ? { sensitivity } : {}),
       ...(templateId ? { templateId, templateTaskId: drill.key } : {}),
     };
     let s: TrainingSession;
@@ -43,6 +59,10 @@ export function DrillCard({ today, templateId }: { today: TodayDrill; templateId
     await db.sessions.add(s);
     setValue("");
     setOpen(false);
+    if (isPb) {
+      setPb(true);
+      setTimeout(() => setPb(false), 2600);
+    }
   };
 
   return (
@@ -61,27 +81,34 @@ export function DrillCard({ today, templateId }: { today: TodayDrill; templateId
             <div className="mt-0.5 text-[11px] text-muted">
               目标 {targetText}
               {drill.strafe && " · 移动靶"}
-              {drill.botArmor && " · 护甲"}
               {attempts.length > 0 && (
                 <span className="text-ink">
                   {" "}· 达标 <span className={metCount > 0 ? "text-teal" : "text-brand"}>{metCount}</span>/{attempts.length} 次
                 </span>
               )}
+              {gapText && <span className="text-brand"> · {gapText}</span>}
             </div>
           </div>
         </div>
-        {!open ? (
-          <button
-            onClick={() => setOpen(true)}
-            className="shrink-0 rounded-lg bg-brand px-3 py-1.5 text-[11px] font-medium text-white active:scale-95"
-          >
-            {attempts.length > 0 ? "再记一次" : "填成绩"}
-          </button>
-        ) : (
-          <button onClick={() => setOpen(false)} className="shrink-0 p-1 text-dim">
-            <X size={16} />
-          </button>
-        )}
+        <div className="flex shrink-0 items-center gap-2">
+          {pb && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-teal/15 px-1.5 py-1 text-[10px] text-teal">
+              <Trophy size={12} /> 新纪录
+            </span>
+          )}
+          {!open ? (
+            <button
+              onClick={() => setOpen(true)}
+              className="rounded-lg bg-brand px-3 py-1.5 text-[11px] font-medium text-white active:scale-95"
+            >
+              {attempts.length > 0 ? "再记一次" : "填成绩"}
+            </button>
+          ) : (
+            <button onClick={() => setOpen(false)} className="p-1 text-dim">
+              <X size={16} />
+            </button>
+          )}
+        </div>
       </div>
 
       {attempts.length > 0 && (

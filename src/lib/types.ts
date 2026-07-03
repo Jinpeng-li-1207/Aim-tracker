@@ -10,6 +10,7 @@ export interface BaseSession {
   botArmor: boolean;
   infiniteAmmo: boolean;
   strafe: boolean;
+  sensitivity?: number; // 记录时的游戏内灵敏度
   mood?: 1 | 2 | 3 | 4 | 5;
   templateId?: string;
   templateTaskId?: string;
@@ -52,6 +53,8 @@ export type Tier =
 export interface Profile {
   id: string; // 固定 "me"
   gameRank?: Tier; // 游戏内对战段位（自填）
+  sensitivity?: number; // 当前游戏内灵敏度
+  dpi?: number; // 鼠标 DPI（可选，用于 eDPI）
   updatedAt: string;
 }
 
@@ -87,6 +90,8 @@ export interface TodayDrill {
   targetValue: number; // 目标（speed=命中数 / eliminate=秒）
   attempts: number[]; // 今日全部尝试成绩（按时间先后）
   todayBest: number | null;
+  recentBest: number | null; // 近期最佳（用于算距目标差距）
+  allTimeBest: number | null; // 历史最佳（用于 PB 判定）
   metCount: number; // 今日达标次数
   done: boolean;
   met: boolean; // 今日最佳是否达标

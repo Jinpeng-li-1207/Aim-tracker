@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Plus, ChevronDown, X } from "lucide-react";
+import { Plus, ChevronDown, X, Flame } from "lucide-react";
 import { db } from "@/lib/db";
 import { computeRank, computeForm } from "@/lib/rank";
 import { buildTodayDrills, buildTemplateDrills } from "@/lib/adaptiveTemplate";
@@ -11,12 +11,14 @@ import type { TrainingTemplate } from "@/lib/types";
 
 interface Props {
   activeTemplate: TrainingTemplate | null;
+  onStart: (tpl: TrainingTemplate) => void;
   onExitTemplate: () => void;
 }
 
-export function Train({ activeTemplate, onExitTemplate }: Props) {
+export function Train({ activeTemplate, onStart, onExitTemplate }: Props) {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
   const profile = useLiveQuery(() => db.profile.get("me"), []);
+  const warmup = useLiveQuery(() => db.templates.get("warmup-preranked"), []);
   const [customOpen, setCustomOpen] = useState(false);
 
   const rank = useMemo(() => computeRank(sessions, profile?.gameRank), [sessions, profile]);
@@ -33,13 +35,19 @@ export function Train({ activeTemplate, onExitTemplate }: Props) {
     <div className="flex flex-col gap-3 pb-6">
       <TargetHeader rank={rank} form={form} gameRank={profile?.gameRank} drills={drills} />
 
+      {!activeTemplate && warmup && (
+        <button
+          onClick={() => onStart(warmup)}
+          className="mx-4 flex items-center justify-center gap-1.5 rounded-xl border border-brand/30 bg-brand/10 py-2.5 text-sm font-medium text-brand active:scale-[0.99]"
+        >
+          <Flame size={15} /> 赛前热身 · 一键开练
+        </button>
+      )}
+
       <div className="mt-1 flex items-center justify-between px-4">
         <span className="text-sm text-ink">今日训练</span>
         {activeTemplate ? (
-          <button
-            onClick={onExitTemplate}
-            className="inline-flex items-center gap-1 text-[11px] text-brand"
-          >
+          <button onClick={onExitTemplate} className="inline-flex items-center gap-1 text-[11px] text-brand">
             <X size={12} /> 退出模板
           </button>
         ) : (
@@ -54,7 +62,7 @@ export function Train({ activeTemplate, onExitTemplate }: Props) {
       )}
 
       {drills.map((d) => (
-        <DrillCard key={d.drill.key} today={d} templateId={activeTemplate?.id} />
+        <DrillCard key={d.drill.key} today={d} templateId={activeTemplate?.id} sensitivity={profile?.sensitivity} />
       ))}
 
       <div className="mx-4 mt-2">
@@ -67,7 +75,7 @@ export function Train({ activeTemplate, onExitTemplate }: Props) {
         </button>
         {customOpen && (
           <div className="mt-3 rounded-xl border border-line bg-surface p-4">
-            <SessionForm onSuccess={() => setCustomOpen(false)} />
+            <SessionForm onSuccess={() => setCustomOpen(false)} sensitivity={profile?.sensitivity} />
           </div>
         )}
       </div>

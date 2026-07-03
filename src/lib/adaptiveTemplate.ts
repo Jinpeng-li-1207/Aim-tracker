@@ -40,13 +40,18 @@ export function computeTodayDrill(
   const isSpeed = drill.testType === "speed";
   const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
 
-  const attempts = sessions
-    .filter((s) => isToday(s.createdAt) && matchesDrill(s, drill))
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map(valueOf);
+  const bestOf = (vals: number[]) =>
+    vals.length === 0 ? null : isSpeed ? Math.max(...vals) : Math.min(...vals);
 
-  const todayBest =
-    attempts.length === 0 ? null : isSpeed ? Math.max(...attempts) : Math.min(...attempts);
+  const matching = sessions
+    .filter((s) => matchesDrill(s, drill))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const matchingVals = matching.map(valueOf);
+
+  const attempts = matching.filter((s) => isToday(s.createdAt)).map(valueOf);
+  const todayBest = bestOf(attempts);
+  const recentBest = bestOf(matchingVals.slice(-10));
+  const allTimeBest = bestOf(matchingVals);
   const metCount = attempts.filter(meets).length;
 
   return {
@@ -54,6 +59,8 @@ export function computeTodayDrill(
     targetValue,
     attempts,
     todayBest,
+    recentBest,
+    allTimeBest,
     metCount,
     done: attempts.length > 0,
     met: todayBest !== null && meets(todayBest),

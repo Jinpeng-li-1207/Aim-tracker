@@ -32,7 +32,11 @@ export default function App() {
 
       <main className="flex-1 overflow-y-auto pt-2">
         {tab === "train" && (
-          <Train activeTemplate={activeTemplate} onExitTemplate={() => setActiveTemplate(null)} />
+          <Train
+            activeTemplate={activeTemplate}
+            onStart={startTemplate}
+            onExitTemplate={() => setActiveTemplate(null)}
+          />
         )}
         {tab === "progress" && <Progress />}
         {tab === "templates" && <Templates onStart={startTemplate} />}

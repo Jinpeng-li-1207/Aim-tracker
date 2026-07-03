@@ -1,5 +1,17 @@
 [
   {
+    "id": "warmup-preranked",
+    "name": "赛前热身",
+    "author": "内置",
+    "description": "排位前 5 分钟快速热手，唤醒手感",
+    "isBuiltIn": true,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "tasks": [
+      { "id": "w1", "order": 1, "testType": "speed", "difficulty": "easy", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 27, "instructions": "简单靶慢速热手，每枪爆头" },
+      { "id": "w2", "order": 2, "testType": "speed", "difficulty": "medium", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 22, "instructions": "中级靶提速，进入状态" }
+    ]
+  },
+  {
     "id": "streamer-daily",
     "name": "主播日常一套",
     "author": "社区参考",

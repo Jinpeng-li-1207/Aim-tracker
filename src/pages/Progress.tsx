@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { computeRank } from "@/lib/rank";
 import { ProgressChart } from "@/components/charts/ProgressChart";
 import { RankHistoryChart } from "@/components/charts/RankHistoryChart";
+import { StreakCard, SensitivityCard } from "@/components/stats/StatsCards";
 import { RankBadge } from "@/components/rank/RankBadge";
 import type { TrainingSession } from "@/lib/types";
 
@@ -44,7 +45,11 @@ export function Progress() {
         </div>
       </div>
 
+      <StreakCard sessions={sessions} />
+
       <RankHistoryChart sessions={sessions} />
+
+      <SensitivityCard sessions={sessions} />
 
       <ProgressChart sessions={sessions} />
 

@@ -6,7 +6,7 @@ import type { TestType, Difficulty, Side, TrainingSession } from "@/lib/types";
 
 const TEST_TYPES: TestType[] = ["speed", "eliminate", "practice"];
 
-export function SessionForm({ onSuccess }: { onSuccess: () => void }) {
+export function SessionForm({ onSuccess, sensitivity }: { onSuccess: () => void; sensitivity?: number }) {
   const [testType, setTestType] = useState<TestType>("speed");
   const [weapon, setWeapon] = useState("Vandal");
   const [botArmor, setBotArmor] = useState(false);
@@ -21,7 +21,16 @@ export function SessionForm({ onSuccess }: { onSuccess: () => void }) {
   const [notes, setNotes] = useState("");
 
   const submit = async () => {
-    const b = { id: nanoid(), createdAt: new Date().toISOString(), weapon, botArmor, infiniteAmmo, strafe, notes };
+    const b = {
+      id: nanoid(),
+      createdAt: new Date().toISOString(),
+      weapon,
+      botArmor,
+      infiniteAmmo,
+      strafe,
+      notes,
+      ...(sensitivity !== undefined ? { sensitivity } : {}),
+    };
     let s: TrainingSession;
     if (testType === "speed") s = { ...b, testType, difficulty, score };
     else if (testType === "eliminate") s = { ...b, testType, targetCount, side, completionSeconds };
