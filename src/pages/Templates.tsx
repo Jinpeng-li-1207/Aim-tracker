@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { TemplateCard } from "@/components/template/TemplateCard";
 import type { TrainingTemplate } from "@/lib/types";
 
-export function Templates() {
+export function Templates({ onStart }: { onStart: (tpl: TrainingTemplate) => void }) {
   const tpls = useLiveQuery(() => db.templates.toArray(), []) ?? [];
   const [open, setOpen] = useState(false);
   const [json, setJson] = useState("");
@@ -64,7 +64,7 @@ export function Templates() {
       )}
 
       {tpls.map((t) => (
-        <TemplateCard key={t.id} tpl={t} />
+        <TemplateCard key={t.id} tpl={t} onStart={onStart} />
       ))}
     </div>
   );

@@ -4,6 +4,7 @@ import { Train } from "@/pages/Train";
 import { Progress } from "@/pages/Progress";
 import { Templates } from "@/pages/Templates";
 import { Me } from "@/pages/Me";
+import type { TrainingTemplate } from "@/lib/types";
 
 const tabs = [
   { id: "train", label: "训练", Icon: Crosshair },
@@ -15,6 +16,12 @@ type Tab = (typeof tabs)[number]["id"];
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("train");
+  const [activeTemplate, setActiveTemplate] = useState<TrainingTemplate | null>(null);
+
+  const startTemplate = (tpl: TrainingTemplate) => {
+    setActiveTemplate(tpl);
+    setTab("train");
+  };
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
@@ -24,9 +31,11 @@ export default function App() {
       </header>
 
       <main className="flex-1 overflow-y-auto pt-2">
-        {tab === "train" && <Train />}
+        {tab === "train" && (
+          <Train activeTemplate={activeTemplate} onExitTemplate={() => setActiveTemplate(null)} />
+        )}
         {tab === "progress" && <Progress />}
-        {tab === "templates" && <Templates />}
+        {tab === "templates" && <Templates onStart={startTemplate} />}
         {tab === "me" && <Me />}
       </main>
 

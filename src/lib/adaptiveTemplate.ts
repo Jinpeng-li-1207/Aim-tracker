@@ -1,18 +1,15 @@
-import calib from "../data/rankCalibration.json";
 import { CORE_DRILLS } from "./constants";
 import { nextTier } from "./rank";
-import type { CoreDrill, Tier, TodayDrill, TrainingSession } from "./types";
-
-type CalibTable = Record<string, Record<string, number>>;
-const speedCalib = calib.speed as CalibTable;
-const elimCalib = calib.eliminate as CalibTable;
+import { getCalibration } from "./calibration";
+import type { CoreDrill, Tier, TodayDrill, TrainingSession, TrainingTemplate } from "./types";
 
 function targetFor(drill: CoreDrill, tier: Tier): number {
+  const c = getCalibration();
   if (drill.testType === "speed" && drill.difficulty) {
-    return speedCalib[drill.difficulty]?.[tier] ?? 30;
+    return c.speed[drill.difficulty]?.[tier] ?? 30;
   }
   if (drill.testType === "eliminate" && drill.targetCount) {
-    return elimCalib[String(drill.targetCount)]?.[tier] ?? 60;
+    return c.eliminate[String(drill.targetCount)]?.[tier] ?? 60;
   }
   return 0;
 }
@@ -23,12 +20,8 @@ function isToday(iso: string): boolean {
 
 function matchesDrill(s: TrainingSession, d: CoreDrill): boolean {
   if (s.testType !== d.testType) return false;
-  if (s.testType === "speed" && d.testType === "speed") {
-    return s.difficulty === d.difficulty;
-  }
-  if (s.testType === "eliminate" && d.testType === "eliminate") {
-    return s.targetCount === d.targetCount;
-  }
+  if (s.testType === "speed" && d.testType === "speed") return s.difficulty === d.difficulty;
+  if (s.testType === "eliminate" && d.testType === "eliminate") return s.targetCount === d.targetCount;
   return false;
 }
 
@@ -38,48 +31,76 @@ function valueOf(s: TrainingSession): number {
   return 0;
 }
 
-// 根据当前段位构建"下一段位目标"的今日训练（含当日全部尝试）
-export function buildTodayDrills(
-  currentTier: Tier,
+// 计算某个 drill 今日的全部尝试与达标情况
+export function computeTodayDrill(
+  drill: CoreDrill,
+  targetValue: number,
+  sessions: TrainingSession[],
+): TodayDrill {
+  const isSpeed = drill.testType === "speed";
+  const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
+
+  const attempts = sessions
+    .filter((s) => isToday(s.createdAt) && matchesDrill(s, drill))
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map(valueOf);
+
+  const todayBest =
+    attempts.length === 0 ? null : isSpeed ? Math.max(...attempts) : Math.min(...attempts);
+  const metCount = attempts.filter(meets).length;
+
+  return {
+    drill,
+    targetValue,
+    attempts,
+    todayBest,
+    metCount,
+    done: attempts.length > 0,
+    met: todayBest !== null && meets(todayBest),
+  };
+}
+
+// 自适应今日训练：核心 drill，目标取"下一段位"要求
+export function buildTodayDrills(currentTier: Tier, sessions: TrainingSession[]): TodayDrill[] {
+  const goal = nextTier(currentTier);
+  return CORE_DRILLS.map((d) => computeTodayDrill(d, targetFor(d, goal), sessions));
+}
+
+// 从练枪模板生成今日训练：目标取模板自带的 targetScore/targetSeconds
+export function buildTemplateDrills(
+  template: TrainingTemplate,
   sessions: TrainingSession[],
 ): TodayDrill[] {
-  const goal = nextTier(currentTier);
-  return CORE_DRILLS.map((drill) => {
-    const targetValue = targetFor(drill, goal);
-    const isSpeed = drill.testType === "speed";
-    const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
-
-    const attempts = sessions
-      .filter((s) => isToday(s.createdAt) && matchesDrill(s, drill))
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-      .map(valueOf);
-
-    const todayBest =
-      attempts.length === 0 ? null : isSpeed ? Math.max(...attempts) : Math.min(...attempts);
-    const metCount = attempts.filter(meets).length;
-
-    return {
-      drill,
-      targetValue,
-      attempts,
-      todayBest,
-      metCount,
-      done: attempts.length > 0,
-      met: todayBest !== null && meets(todayBest),
-    };
-  });
+  return template.tasks
+    .filter((t) => t.testType !== "practice")
+    .map((t) => {
+      const drill: CoreDrill = {
+        key: t.id,
+        testType: t.testType as "speed" | "eliminate",
+        weapon: t.weapon,
+        strafe: !!t.strafe,
+        botArmor: !!t.botArmor,
+        difficulty: t.difficulty,
+        targetCount: t.targetCount,
+        side: t.side,
+      };
+      const targetValue =
+        t.testType === "speed" ? (t.targetScore ?? 30) : (t.targetSeconds ?? 60);
+      return computeTodayDrill(drill, targetValue, sessions);
+    });
 }
 
 // drill 的中英双语一句话描述
 export function drillLabel(drill: CoreDrill): { zh: string; en: string } {
   if (drill.testType === "speed") {
+    const zhMap: Record<string, string> = { easy: "简单", medium: "中级", hard: "困难" };
     return {
-      zh: `${drill.difficulty === "medium" ? "中级" : drill.difficulty === "hard" ? "困难" : "简单"}靶 · 速度`,
-      en: `${drill.difficulty?.[0].toUpperCase()}${drill.difficulty?.slice(1)} · Speed`,
+      zh: `${zhMap[drill.difficulty ?? "medium"]}靶 · 速度`,
+      en: `${(drill.difficulty ?? "").charAt(0).toUpperCase()}${(drill.difficulty ?? "").slice(1)} · Speed`,
     };
   }
   const sideZh = drill.side === "left" ? "左侧" : drill.side === "right" ? "右侧" : "正面";
-  const sideEn = drill.side ? drill.side[0].toUpperCase() + drill.side.slice(1) : "Front";
+  const sideEn = drill.side ? drill.side.charAt(0).toUpperCase() + drill.side.slice(1) : "Front";
   return {
     zh: `${sideZh} ${drill.targetCount} 靶`,
     en: `Eliminate ${drill.targetCount} · ${sideEn}`,

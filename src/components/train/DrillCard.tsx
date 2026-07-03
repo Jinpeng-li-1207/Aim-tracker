@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { drillLabel } from "@/lib/adaptiveTemplate";
 import type { TodayDrill, TrainingSession } from "@/lib/types";
 
-export function DrillCard({ today }: { today: TodayDrill }) {
+export function DrillCard({ today, templateId }: { today: TodayDrill; templateId?: string }) {
   const { drill, targetValue, attempts, metCount, met } = today;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
@@ -26,6 +26,7 @@ export function DrillCard({ today }: { today: TodayDrill }) {
       botArmor: drill.botArmor,
       infiniteAmmo: true,
       strafe: drill.strafe,
+      ...(templateId ? { templateId, templateTaskId: drill.key } : {}),
     };
     let s: TrainingSession;
     if (drill.testType === "speed") {

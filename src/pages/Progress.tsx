@@ -3,6 +3,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/lib/db";
 import { computeRank } from "@/lib/rank";
 import { ProgressChart } from "@/components/charts/ProgressChart";
+import { RankHistoryChart } from "@/components/charts/RankHistoryChart";
 import { RankBadge } from "@/components/rank/RankBadge";
 import type { TrainingSession } from "@/lib/types";
 
@@ -42,6 +43,8 @@ export function Progress() {
           </div>
         </div>
       </div>
+
+      <RankHistoryChart sessions={sessions} />
 
       <ProgressChart sessions={sessions} />
 

@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Download } from "lucide-react";
+import { Download, ChevronDown, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { TIER_ORDER, TIER_META } from "@/lib/constants";
+import { CalibrationEditor } from "@/components/settings/CalibrationEditor";
 import type { Tier } from "@/lib/types";
 
 export function Me() {
   const profile = useLiveQuery(() => db.profile.get("me"), []);
   const sessionCount = useLiveQuery(() => db.sessions.count(), []) ?? 0;
+  const [calOpen, setCalOpen] = useState(false);
 
   const setGameRank = async (tier: Tier) => {
     await db.profile.put({ id: "me", gameRank: tier, updatedAt: new Date().toISOString() });
@@ -65,8 +68,23 @@ export function Me() {
         </button>
       </section>
 
+      <section className="rounded-xl border border-line bg-surface">
+        <button
+          onClick={() => setCalOpen((v) => !v)}
+          className="flex w-full items-center justify-between p-4 text-sm text-ink"
+        >
+          成绩↔段位校准表
+          {calOpen ? <ChevronDown size={16} className="text-dim" /> : <ChevronRight size={16} className="text-dim" />}
+        </button>
+        {calOpen && (
+          <div className="border-t border-line p-4">
+            <CalibrationEditor />
+          </div>
+        )}
+      </section>
+
       <p className="px-1 text-[11px] text-dim leading-relaxed">
-        段位与今日目标均基于「成绩↔段位校准表」计算，该表采用社区/主播标准，可按需调整。数据仅存本机，不上传。
+        段位与今日目标均基于校准表计算，该表采用社区/主播标准，可按需调整。数据仅存本机，不上传。
       </p>
     </div>
   );

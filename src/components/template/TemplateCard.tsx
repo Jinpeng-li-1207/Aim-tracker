@@ -1,3 +1,4 @@
+import { Play } from "lucide-react";
 import { DIFFICULTIES, SIDES } from "@/lib/constants";
 import type { TemplateTask, TrainingTemplate } from "@/lib/types";
 
@@ -13,7 +14,12 @@ function taskLine(t: TemplateTask): string {
   return `自由练习 ${t.durationMinutes ?? "-"}min`;
 }
 
-export function TemplateCard({ tpl }: { tpl: TrainingTemplate }) {
+interface Props {
+  tpl: TrainingTemplate;
+  onStart?: (tpl: TrainingTemplate) => void;
+}
+
+export function TemplateCard({ tpl, onStart }: Props) {
   return (
     <div className="rounded-xl border border-line bg-surface p-3.5">
       <div className="flex items-center justify-between">
@@ -32,6 +38,15 @@ export function TemplateCard({ tpl }: { tpl: TrainingTemplate }) {
           </li>
         ))}
       </ol>
+      {onStart && (
+        <button
+          onClick={() => onStart(tpl)}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand py-2 text-sm font-medium text-white active:scale-[0.98]"
+        >
+          <Play size={15} />
+          一键开练
+        </button>
+      )}
     </div>
   );
 }
