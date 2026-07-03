@@ -45,6 +45,54 @@ export function computeStreak(sessions: TrainingSession[]): {
   return { current, longest, days };
 }
 
+export interface ConfigRow {
+  key: string;
+  zh: string;
+  en: string;
+  testType: "speed" | "eliminate";
+  count: number;
+  best: number;
+  values: number[]; // 按时间先后
+}
+
+// 按训练项配置聚合（速度按难度、消灭按靶数），练得多的排前
+export function configBreakdown(sessions: TrainingSession[]): ConfigRow[] {
+  const map = new Map<string, ConfigRow>();
+  const sorted = [...sessions].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+
+  for (const s of sorted) {
+    let key: string;
+    let zh: string;
+    let en: string;
+    let testType: "speed" | "eliminate";
+    let value: number;
+    if (s.testType === "speed") {
+      testType = "speed";
+      key = `speed-${s.difficulty}`;
+      zh = s.difficulty === "easy" ? "简单靶" : s.difficulty === "medium" ? "中级靶" : "困难靶";
+      en = s.difficulty.charAt(0).toUpperCase() + s.difficulty.slice(1);
+      value = s.score;
+    } else if (s.testType === "eliminate") {
+      testType = "eliminate";
+      key = `elim-${s.targetCount}`;
+      zh = `消灭 ${s.targetCount}`;
+      en = `Eliminate ${s.targetCount}`;
+      value = s.completionSeconds;
+    } else {
+      continue;
+    }
+    const r =
+      map.get(key) ??
+      { key, zh, en, testType, count: 0, best: testType === "speed" ? -Infinity : Infinity, values: [] };
+    r.count += 1;
+    r.values.push(value);
+    r.best = testType === "speed" ? Math.max(r.best, value) : Math.min(r.best, value);
+    map.set(key, r);
+  }
+
+  return [...map.values()].sort((a, b) => b.count - a.count);
+}
+
 // 灵敏度分组：每个灵敏度下速度测试的平均命中
 export function sensitivityBreakdown(
   sessions: TrainingSession[],

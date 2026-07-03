@@ -1,4 +1,4 @@
-import { Play } from "lucide-react";
+import { Play, Trash2 } from "lucide-react";
 import { DIFFICULTIES, SIDES } from "@/lib/constants";
 import type { TemplateTask, TrainingTemplate } from "@/lib/types";
 
@@ -23,14 +23,22 @@ function taskLine(t: TemplateTask): string {
 interface Props {
   tpl: TrainingTemplate;
   onStart?: (tpl: TrainingTemplate) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function TemplateCard({ tpl, onStart }: Props) {
+export function TemplateCard({ tpl, onStart, onDelete }: Props) {
   return (
     <div className="rounded-xl border border-line bg-surface p-3.5">
       <div className="flex items-center justify-between">
         <span className="text-sm text-ink">{tpl.name}</span>
-        <span className="text-[11px] text-dim">{tpl.author}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-dim">{tpl.author}</span>
+          {onDelete && !tpl.isBuiltIn && (
+            <button onClick={() => onDelete(tpl.id)} className="text-dim">
+              <Trash2 size={13} />
+            </button>
+          )}
+        </div>
       </div>
       <p className="mt-1 text-[11px] text-muted">{tpl.description}</p>
       <ol className="mt-2.5 flex flex-col gap-1.5">
