@@ -45,37 +45,6 @@ export function computeStreak(sessions: TrainingSession[]): {
   return { current, longest, days };
 }
 
-// 热力图：最近 weeks 周、每天的记录数（按周对齐，末尾补齐到本周日）
-export function heatmapData(
-  sessions: TrainingSession[],
-  weeks = 12,
-): { date: string; count: number }[] {
-  const counts = new Map<string, number>();
-  for (const s of sessions) {
-    const k = dayKey(s.createdAt);
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  const total = weeks * 7;
-  const out: { date: string; count: number }[] = [];
-  const start = shift(todayKey(), -(total - 1));
-  for (let i = 0; i < total; i++) {
-    const k = shift(start, i);
-    out.push({ date: k, count: counts.get(k) ?? 0 });
-  }
-  return out;
-}
-
-// 本周回顾：近 7 天记录数与训练天数
-export function weeklyRecap(sessions: TrainingSession[]): {
-  count: number;
-  days: number;
-} {
-  const cutoff = shift(todayKey(), -6);
-  const wk = sessions.filter((s) => dayKey(s.createdAt) >= cutoff);
-  const days = new Set(wk.map((s) => dayKey(s.createdAt))).size;
-  return { count: wk.length, days };
-}
-
 // 灵敏度分组：每个灵敏度下速度测试的平均命中
 export function sensitivityBreakdown(
   sessions: TrainingSession[],

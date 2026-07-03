@@ -35,9 +35,9 @@ function FormChip({ form }: { form: FormState }) {
 
 export function TargetHeader({ rank, form, gameRank, drills }: Props) {
   const goal = nextTier(rank.tier);
-  const metCount = drills.filter((d) => d.met).length;
+  const passedCount = drills.filter((d) => d.passed).length;
   const total = drills.length;
-  const pct = total ? Math.round((metCount / total) * 100) : 0;
+  const pct = total ? Math.round((passedCount / total) * 100) : 0;
   const hasAim = rank.source === "records";
 
   return (
@@ -80,7 +80,7 @@ export function TargetHeader({ rank, form, gameRank, drills }: Props) {
       <div className="mt-3 border-t border-line pt-3">
         <div className="mb-1.5 flex items-center justify-between text-[11px]">
           <span className="inline-flex items-center gap-1 text-muted">
-            冲 <RankBadge tier={goal} size="sm" /> 今日达标 {metCount}/{total}
+            冲 <RankBadge tier={goal} size="sm" /> 今日通过 {passedCount}/{total}
           </span>
           <span className="text-brand">{pct}%</span>
         </div>

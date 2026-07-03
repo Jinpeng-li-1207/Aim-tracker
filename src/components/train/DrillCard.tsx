@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function DrillCard({ today, templateId, sensitivity }: Props) {
-  const { drill, targetValue, attempts, recentBest, allTimeBest, metCount, met } = today;
+  const { drill, targetValue, attempts, recentBest, allTimeBest, requiredPasses, consecutive, passProgress, passed } = today;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [pb, setPb] = useState(false);
@@ -23,8 +23,13 @@ export function DrillCard({ today, templateId, sensitivity }: Props) {
   const targetText = isSpeed ? `≥ ${targetValue}/30` : `≤ ${targetValue}s`;
   const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
 
+  const passText =
+    requiredPasses > 1 || consecutive
+      ? `${consecutive ? "连续" : ""}通过 ${Math.min(passProgress, requiredPasses)}/${requiredPasses}`
+      : `达标 ${passProgress > 0 ? "✓" : `0/${attempts.length || 1}`}`;
+
   const gapText = (() => {
-    if (met || recentBest === null) return null;
+    if (passed || recentBest === null) return null;
     const g = isSpeed ? targetValue - recentBest : recentBest - targetValue;
     if (g <= 0) return null;
     return isSpeed ? `距目标还差 +${g}` : `再快 ${g}s 达标`;
@@ -66,10 +71,10 @@ export function DrillCard({ today, templateId, sensitivity }: Props) {
   };
 
   return (
-    <div className={`mx-4 rounded-xl border bg-surface p-3 ${met ? "border-teal/40" : "border-line"}`}>
+    <div className={`mx-4 rounded-xl border bg-surface p-3 ${passed ? "border-teal/40" : "border-line"}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          {met ? (
+          {passed ? (
             <CheckCircle2 size={20} className="text-teal" />
           ) : (
             <Circle size={20} className="text-dim" />
@@ -82,9 +87,7 @@ export function DrillCard({ today, templateId, sensitivity }: Props) {
               目标 {targetText}
               {drill.strafe && " · 移动靶"}
               {attempts.length > 0 && (
-                <span className="text-ink">
-                  {" "}· 达标 <span className={metCount > 0 ? "text-teal" : "text-brand"}>{metCount}</span>/{attempts.length} 次
-                </span>
+                <span className={passed ? "text-teal" : "text-ink"}> · {passText}</span>
               )}
               {gapText && <span className="text-brand"> · {gapText}</span>}
             </div>

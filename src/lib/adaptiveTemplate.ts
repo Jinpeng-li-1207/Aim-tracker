@@ -1,7 +1,16 @@
 import { CORE_DRILLS } from "./constants";
 import { nextTier } from "./rank";
 import { getCalibration } from "./calibration";
-import type { CoreDrill, Tier, TodayDrill, TrainingSession, TrainingTemplate } from "./types";
+import type {
+  CoreDrill,
+  PassRule,
+  Tier,
+  TodayDrill,
+  TrainingSession,
+  TrainingTemplate,
+} from "./types";
+
+const DEFAULT_PASS: PassRule = { requiredPasses: 1, consecutive: false };
 
 function targetFor(drill: CoreDrill, tier: Tier): number {
   const c = getCalibration();
@@ -31,11 +40,22 @@ function valueOf(s: TrainingSession): number {
   return 0;
 }
 
-// 计算某个 drill 今日的全部尝试与达标情况
+function longestRun(flags: boolean[]): number {
+  let best = 0;
+  let run = 0;
+  for (const f of flags) {
+    run = f ? run + 1 : 0;
+    if (run > best) best = run;
+  }
+  return best;
+}
+
+// 计算某个 drill 今日的全部尝试、达标与"通过"情况
 export function computeTodayDrill(
   drill: CoreDrill,
   targetValue: number,
   sessions: TrainingSession[],
+  pass: PassRule = DEFAULT_PASS,
 ): TodayDrill {
   const isSpeed = drill.testType === "speed";
   const meets = (v: number) => (isSpeed ? v >= targetValue : v <= targetValue);
@@ -54,6 +74,10 @@ export function computeTodayDrill(
   const allTimeBest = bestOf(matchingVals);
   const metCount = attempts.filter(meets).length;
 
+  const requiredPasses = Math.max(1, pass.requiredPasses);
+  const passProgress = pass.consecutive ? longestRun(attempts.map(meets)) : metCount;
+  const passed = passProgress >= requiredPasses;
+
   return {
     drill,
     targetValue,
@@ -62,21 +86,30 @@ export function computeTodayDrill(
     recentBest,
     allTimeBest,
     metCount,
+    requiredPasses,
+    consecutive: pass.consecutive,
+    passProgress,
+    passed,
     done: attempts.length > 0,
     met: todayBest !== null && meets(todayBest),
   };
 }
 
-// 自适应今日训练：核心 drill，目标取"下一段位"要求
-export function buildTodayDrills(currentTier: Tier, sessions: TrainingSession[]): TodayDrill[] {
+// 自适应今日训练：核心 drill，目标取"下一段位"要求；pass 为全局通过条件
+export function buildTodayDrills(
+  currentTier: Tier,
+  sessions: TrainingSession[],
+  pass: PassRule = DEFAULT_PASS,
+): TodayDrill[] {
   const goal = nextTier(currentTier);
-  return CORE_DRILLS.map((d) => computeTodayDrill(d, targetFor(d, goal), sessions));
+  return CORE_DRILLS.map((d) => computeTodayDrill(d, targetFor(d, goal), sessions, pass));
 }
 
-// 从练枪模板生成今日训练：目标取模板自带的 targetScore/targetSeconds
+// 从练枪模板生成今日训练：目标取模板自带值，通过条件优先用任务自带、否则用全局
 export function buildTemplateDrills(
   template: TrainingTemplate,
   sessions: TrainingSession[],
+  pass: PassRule = DEFAULT_PASS,
 ): TodayDrill[] {
   return template.tasks
     .filter((t) => t.testType !== "practice")
@@ -93,7 +126,11 @@ export function buildTemplateDrills(
       };
       const targetValue =
         t.testType === "speed" ? (t.targetScore ?? 30) : (t.targetSeconds ?? 60);
-      return computeTodayDrill(drill, targetValue, sessions);
+      const taskPass: PassRule = {
+        requiredPasses: t.requiredPasses ?? pass.requiredPasses,
+        consecutive: t.consecutive ?? pass.consecutive,
+      };
+      return computeTodayDrill(drill, targetValue, sessions, taskPass);
     });
 }
 

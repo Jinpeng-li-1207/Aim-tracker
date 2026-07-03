@@ -23,13 +23,15 @@ export function Train({ activeTemplate, onStart, onExitTemplate }: Props) {
 
   const rank = useMemo(() => computeRank(sessions, profile?.gameRank), [sessions, profile]);
   const form = useMemo(() => computeForm(sessions), [sessions]);
-  const drills = useMemo(
-    () =>
-      activeTemplate
-        ? buildTemplateDrills(activeTemplate, sessions)
-        : buildTodayDrills(rank.tier, sessions),
-    [activeTemplate, rank.tier, sessions],
-  );
+  const drills = useMemo(() => {
+    const pass = {
+      requiredPasses: profile?.requiredPasses ?? 1,
+      consecutive: profile?.consecutivePass ?? false,
+    };
+    return activeTemplate
+      ? buildTemplateDrills(activeTemplate, sessions, pass)
+      : buildTodayDrills(rank.tier, sessions, pass);
+  }, [activeTemplate, rank.tier, sessions, profile]);
 
   return (
     <div className="flex flex-col gap-3 pb-6">

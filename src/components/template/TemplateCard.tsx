@@ -2,14 +2,20 @@ import { Play } from "lucide-react";
 import { DIFFICULTIES, SIDES } from "@/lib/constants";
 import type { TemplateTask, TrainingTemplate } from "@/lib/types";
 
+function passSuffix(t: TemplateTask): string {
+  const n = t.requiredPasses ?? 1;
+  if (n <= 1) return "";
+  return t.consecutive ? ` · 连续达标 ${n} 次` : ` · 达标 ${n} 次通过`;
+}
+
 function taskLine(t: TemplateTask): string {
   if (t.testType === "speed") {
     const d = DIFFICULTIES.find((x) => x.id === t.difficulty);
-    return `${d?.zh ?? t.difficulty}靶 ${d?.en ?? ""} · 目标 ${t.targetScore ?? "-"}/30`;
+    return `${d?.zh ?? t.difficulty}靶 ${d?.en ?? ""} · 目标 ${t.targetScore ?? "-"}/30${passSuffix(t)}`;
   }
   if (t.testType === "eliminate") {
     const sd = SIDES.find((x) => x.id === t.side);
-    return `${sd?.zh ?? t.side} ${t.targetCount}靶 · 目标 ${t.targetSeconds ?? "-"}s`;
+    return `${sd?.zh ?? t.side} ${t.targetCount}靶 · 目标 ${t.targetSeconds ?? "-"}s${passSuffix(t)}`;
   }
   return `自由练习 ${t.durationMinutes ?? "-"}min`;
 }

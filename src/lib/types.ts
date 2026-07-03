@@ -55,6 +55,8 @@ export interface Profile {
   gameRank?: Tier; // 游戏内对战段位（自填）
   sensitivity?: number; // 当前游戏内灵敏度
   dpi?: number; // 鼠标 DPI（可选，用于 eDPI）
+  requiredPasses?: number; // 每个 drill 达标几次算"通过"（默认 1）
+  consecutivePass?: boolean; // 是否需要连续达标
   updatedAt: string;
 }
 
@@ -84,6 +86,12 @@ export interface CoreDrill {
   side?: Side; // eliminate
 }
 
+// 通过条件
+export interface PassRule {
+  requiredPasses: number; // 达标几次算通过
+  consecutive: boolean; // 是否需连续
+}
+
 // 今日某个 drill 的实时状态（支持多次尝试，健身"组"式）
 export interface TodayDrill {
   drill: CoreDrill;
@@ -93,8 +101,12 @@ export interface TodayDrill {
   recentBest: number | null; // 近期最佳（用于算距目标差距）
   allTimeBest: number | null; // 历史最佳（用于 PB 判定）
   metCount: number; // 今日达标次数
+  requiredPasses: number; // 通过所需达标次数
+  consecutive: boolean; // 是否需连续
+  passProgress: number; // 通过进度（累计或连续达标数）
+  passed: boolean; // 是否已通过
   done: boolean;
-  met: boolean; // 今日最佳是否达标
+  met: boolean; // 今日最佳是否达标（单次）
 }
 
 // 练枪模板
@@ -111,6 +123,8 @@ export interface TemplateTask {
   targetScore?: number;
   targetSeconds?: number;
   durationMinutes?: number;
+  requiredPasses?: number; // 达标几次算通过（默认取全局）
+  consecutive?: boolean; // 是否需连续
   instructions: string;
 }
 

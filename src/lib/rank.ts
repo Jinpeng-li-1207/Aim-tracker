@@ -107,20 +107,3 @@ export function computeForm(sessions: TrainingSession[]): FormState {
   if (delta <= -0.5) return { label: "手感下滑", tone: "down" };
   return { label: "状态稳定", tone: "flat" };
 }
-
-// 段位历史：按天聚合出每日综合段位序号（0–8）
-export function rankHistory(sessions: TrainingSession[]): { date: string; index: number }[] {
-  const reps = dailyRepresentatives(sessions);
-  const byDate = new Map<string, number[]>();
-  for (const r of reps) {
-    const arr = byDate.get(r.dateKey) ?? [];
-    arr.push(r.index);
-    byDate.set(r.dateKey, arr);
-  }
-  return [...byDate.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([date, arr]) => ({
-      date: date.slice(5),
-      index: Math.round(arr.reduce((x, y) => x + y, 0) / arr.length),
-    }));
-}

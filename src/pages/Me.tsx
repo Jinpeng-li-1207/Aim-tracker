@@ -4,18 +4,25 @@ import { Download, ChevronDown, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { TIER_ORDER, TIER_META } from "@/lib/constants";
 import { CalibrationEditor } from "@/components/settings/CalibrationEditor";
+import { SensitivityCard } from "@/components/stats/StatsCards";
 import type { Tier } from "@/lib/types";
 
 export function Me() {
   const profile = useLiveQuery(() => db.profile.get("me"), []);
-  const sessionCount = useLiveQuery(() => db.sessions.count(), []) ?? 0;
+  const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
+  const sessionCount = sessions.length;
   const [calOpen, setCalOpen] = useState(false);
 
-  const mergeProfile = async (patch: Partial<{ gameRank: Tier; sensitivity: number; dpi: number }>) => {
+  const mergeProfile = async (
+    patch: Partial<{ gameRank: Tier; sensitivity: number; dpi: number; requiredPasses: number; consecutivePass: boolean }>,
+  ) => {
     const existing = await db.profile.get("me");
     await db.profile.put({ id: "me", ...(existing ?? {}), ...patch, updatedAt: new Date().toISOString() });
   };
   const setGameRank = (tier: Tier) => mergeProfile({ gameRank: tier });
+
+  const requiredPasses = profile?.requiredPasses ?? 1;
+  const consecutivePass = profile?.consecutivePass ?? false;
 
   const exportData = async () => {
     const sessions = await db.sessions.toArray();
@@ -87,6 +94,35 @@ export function Me() {
         {profile?.sensitivity !== undefined && profile?.dpi !== undefined && (
           <p className="mt-2 text-[11px] text-dim">eDPI ≈ {Math.round(profile.sensitivity * profile.dpi)}</p>
         )}
+        <SensitivityCard sessions={sessions} />
+      </section>
+
+      <section className="rounded-xl border border-line bg-surface p-4">
+        <h2 className="mb-1 text-sm text-ink">通过条件</h2>
+        <p className="mb-3 text-[11px] text-muted">
+          自适应训练里，一个项目达标几次才算"通过"。练枪模板可在其内单独指定，未指定则用这里的默认。
+        </p>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-xs text-muted">
+            达标次数
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={requiredPasses}
+              onChange={(e) => mergeProfile({ requiredPasses: Math.max(1, Number(e.target.value)) })}
+              className="w-16 rounded-lg px-3 py-2 text-sm text-ink"
+            />
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-muted">
+            <input
+              type="checkbox"
+              checked={consecutivePass}
+              onChange={(e) => mergeProfile({ consecutivePass: e.target.checked })}
+            />
+            需连续达标
+          </label>
+        </div>
       </section>
 
       <section className="rounded-xl border border-line bg-surface p-4">
