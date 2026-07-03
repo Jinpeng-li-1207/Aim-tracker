@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 470" font-family="Segoe UI, system-ui, sans-serif">
+  <rect width="780" height="470" fill="#0b1015"/>
+
+  <!-- Frame 1: 训练 -->
+  <g transform="translate(20,20)">
+    <rect width="230" height="430" rx="18" fill="#0e1419" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="14" y="16" width="7" height="15" rx="2" fill="#ff4655"/>
+    <text x="28" y="28" fill="#ece8e1" font-size="12">AIM TRACKER</text>
+    <text x="120" y="28" fill="#6e7b85" font-size="11">训练</text>
+
+    <rect x="12" y="42" width="206" height="86" rx="12" fill="#16202a" stroke="rgba(255,255,255,0.07)"/>
+    <text x="24" y="62" fill="#768079" font-size="9">游戏段位</text>
+    <text x="24" y="80" fill="#c2ccd4" font-size="15">白银</text>
+    <text x="130" y="62" fill="#768079" font-size="9">瞄准段位</text>
+    <text x="130" y="80" fill="#c2ccd4" font-size="15">白银</text>
+    <rect x="24" y="94" width="182" height="4" rx="2" fill="#0b1015"/>
+    <rect x="24" y="94" width="60" height="4" rx="2" fill="#ff4655"/>
+    <text x="24" y="118" fill="#768079" font-size="9">冲黄金 · 今日通过 1/3</text>
+
+    <rect x="12" y="138" width="206" height="34" rx="10" fill="#16202a" stroke="rgba(255,70,85,0.3)"/>
+    <text x="24" y="159" fill="#ff4655" font-size="11">⌁ 赛前热身 · 一键开练</text>
+
+    <g transform="translate(12,182)">
+      <rect width="206" height="56" rx="11" fill="#16202a" stroke="rgba(20,216,196,0.4)"/>
+      <circle cx="18" cy="20" r="6" fill="none" stroke="#14d8c4" stroke-width="2"/>
+      <path d="M15 20 l2.5 2.5 L22 17" fill="none" stroke="#14d8c4" stroke-width="2"/>
+      <text x="32" y="18" fill="#ece8e1" font-size="11">中级靶 · 速度</text>
+      <text x="32" y="33" fill="#14d8c4" font-size="9">通过 2/2</text>
+      <rect x="120" y="12" width="40" height="20" rx="6" fill="#0e1419" stroke="rgba(255,255,255,0.14)"/>
+      <text x="128" y="26" fill="#4a555e" font-size="9">命中</text>
+      <rect x="165" y="12" width="34" height="20" rx="6" fill="#ff4655"/>
+      <text x="172" y="26" fill="#fff" font-size="9">打卡</text>
+      <rect x="8" y="38" width="60" height="12" rx="4" fill="#0e1419" stroke="rgba(20,216,196,0.35)"/>
+      <text x="30" y="47" fill="#14d8c4" font-size="9">25</text>
+    </g>
+
+    <g transform="translate(12,246)">
+      <rect width="206" height="40" rx="11" fill="#16202a" stroke="rgba(255,255,255,0.08)"/>
+      <circle cx="18" cy="20" r="6" fill="none" stroke="#3a4650" stroke-width="2"/>
+      <text x="32" y="18" fill="#ece8e1" font-size="11">困难靶 · 速度</text>
+      <text x="32" y="32" fill="#768079" font-size="9">通过 1/2</text>
+      <rect x="120" y="10" width="40" height="20" rx="6" fill="#0e1419" stroke="rgba(255,255,255,0.14)"/>
+      <rect x="165" y="10" width="34" height="20" rx="6" fill="#ff4655"/>
+      <text x="172" y="24" fill="#fff" font-size="9">打卡</text>
+    </g>
+  </g>
+
+  <!-- Frame 2: 成长 -->
+  <g transform="translate(275,20)">
+    <rect width="230" height="430" rx="18" fill="#0e1419" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="14" y="16" width="7" height="15" rx="2" fill="#ff4655"/>
+    <text x="28" y="28" fill="#ece8e1" font-size="12">AIM TRACKER</text>
+    <text x="120" y="28" fill="#6e7b85" font-size="11">成长</text>
+
+    <text x="14" y="56" fill="#ece8e1" font-size="12">各项训练</text>
+    <text x="150" y="56" fill="#6e7b85" font-size="9">练得越多越靠前</text>
+
+    <g transform="translate(12,66)">
+      <rect width="206" height="150" rx="12" fill="#16202a" stroke="rgba(255,255,255,0.08)"/>
+      <text x="12" y="22" fill="#ece8e1" font-size="11">中级靶 <tspan fill="#4a555e">Medium</tspan></text>
+      <text x="12" y="37" fill="#768079" font-size="9">7 次 · 最佳 25/30</text>
+      <polyline points="14,120 40,96 66,100 92,94 118,86 144,110 170,92" fill="none" stroke="#ff4655" stroke-width="2"/>
+      <line x1="14" y1="98" x2="192" y2="98" stroke="#8a9199" stroke-width="1" stroke-dasharray="4 3"/>
+      <g transform="translate(12,126)" font-size="9">
+        <rect width="42" height="20" rx="6" fill="#0e1419"/><text x="10" y="14" fill="#ece8e1">7次</text>
+        <rect x="46" width="42" height="20" rx="6" fill="#0e1419"/><text x="52" y="14" fill="#ece8e1">最佳25</text>
+        <rect x="92" width="42" height="20" rx="6" fill="#0e1419"/><text x="100" y="14" fill="#ece8e1">均22</text>
+        <rect x="138" width="42" height="20" rx="6" fill="#0e1419"/><text x="146" y="14" fill="#ece8e1">近24</text>
+      </g>
+    </g>
+
+    <g transform="translate(12,226)">
+      <rect width="206" height="36" rx="11" fill="#16202a" stroke="rgba(255,255,255,0.08)"/>
+      <text x="12" y="17" fill="#ece8e1" font-size="11">困难靶 <tspan fill="#4a555e">Hard</tspan></text>
+      <text x="12" y="30" fill="#768079" font-size="9">2 次 · 最佳 18/30</text>
+      <polyline points="150,26 175,10" fill="none" stroke="#ff4655" stroke-width="1.5"/>
+    </g>
+    <g transform="translate(12,270)" font-size="10">
+      <rect width="206" height="30" rx="11" fill="#16202a" stroke="rgba(255,255,255,0.08)"/>
+      <text x="12" y="15" fill="#4a555e">简单靶 Easy</text><text x="12" y="26" fill="#4a555e" font-size="9">未训练</text>
+      <rect y="36" width="206" height="30" rx="11" fill="#16202a" stroke="rgba(255,255,255,0.08)"/>
+      <text x="12" y="51" fill="#4a555e">消灭 100</text><text x="12" y="62" fill="#4a555e" font-size="9">未训练</text>
+    </g>
+  </g>
+
+  <!-- Frame 3: 模板 -->
+  <g transform="translate(530,20)">
+    <rect width="230" height="430" rx="18" fill="#0e1419" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="14" y="16" width="7" height="15" rx="2" fill="#ff4655"/>
+    <text x="28" y="28" fill="#ece8e1" font-size="12">AIM TRACKER</text>
+    <text x="118" y="28" fill="#6e7b85" font-size="11">模板</text>
+
+    <rect x="12" y="42" width="206" height="30" rx="10" fill="#ff4655"/>
+    <text x="88" y="61" fill="#fff" font-size="11">+ 新建模板</text>
+
+    <g transform="translate(12,82)">
+      <rect width="206" height="120" rx="12" fill="#16202a" stroke="rgba(255,255,255,0.07)"/>
+      <text x="12" y="20" fill="#ece8e1" font-size="11">主播日常一套</text>
+      <text x="12" y="36" fill="#768079" font-size="9">中级靶 → 侧面100靶 → 高级靶</text>
+      <text x="12" y="54" fill="#ff4655" font-size="9">1</text><text x="24" y="54" fill="#ece8e1" font-size="9">中级靶 · 目标 26/30 · 达标2次</text>
+      <text x="12" y="70" fill="#ff4655" font-size="9">2</text><text x="24" y="70" fill="#ece8e1" font-size="9">左侧 100靶 · 目标 90s</text>
+      <text x="12" y="86" fill="#ff4655" font-size="9">3</text><text x="24" y="86" fill="#ece8e1" font-size="9">困难靶 · 连续达标 3 次</text>
+      <rect x="12" y="94" width="182" height="20" rx="6" fill="#ff4655"/>
+      <text x="82" y="108" fill="#fff" font-size="9">▷ 一键开练</text>
+    </g>
+
+    <g transform="translate(12,212)">
+      <rect width="206" height="70" rx="12" fill="#16202a" stroke="rgba(255,255,255,0.07)"/>
+      <text x="12" y="20" fill="#ece8e1" font-size="11">赛前热身</text>
+      <text x="12" y="36" fill="#768079" font-size="9">排位前 5 分钟快速热手</text>
+      <rect x="12" y="44" width="182" height="18" rx="6" fill="#ff4655"/>
+      <text x="82" y="57" fill="#fff" font-size="9">▷ 一键开练</text>
+    </g>
+  </g>
+
+  <!-- bottom nav hint -->
+  <text x="390" y="466" fill="#4a555e" font-size="10" text-anchor="middle">训练 · 成长 · 模板 · 我的</text>
+</svg>
