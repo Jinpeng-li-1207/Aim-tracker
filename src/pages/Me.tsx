@@ -69,7 +69,7 @@ export function Me() {
           填你的游戏内灵敏度，之后每次记录都会带上它。「成长」页会分析不同灵敏度下的表现，帮你找手感甜点。
         </p>
         <div className="flex gap-3">
-          <label className="flex flex-1 flex-col gap-1 text-[11px] text-muted">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 text-[11px] text-muted">
             游戏内灵敏度 Sens
             <input
               type="number"
@@ -77,17 +77,17 @@ export function Me() {
               defaultValue={profile?.sensitivity ?? ""}
               onBlur={(e) => e.target.value && mergeProfile({ sensitivity: Number(e.target.value) })}
               placeholder="0.35"
-              className="rounded-lg px-3 py-2 text-sm text-ink"
+              className="w-full rounded-lg px-3 py-2 text-sm text-ink"
             />
           </label>
-          <label className="flex flex-1 flex-col gap-1 text-[11px] text-muted">
+          <label className="flex min-w-0 flex-1 flex-col gap-1 text-[11px] text-muted">
             鼠标 DPI（可选）
             <input
               type="number"
               defaultValue={profile?.dpi ?? ""}
               onBlur={(e) => e.target.value && mergeProfile({ dpi: Number(e.target.value) })}
               placeholder="800"
-              className="rounded-lg px-3 py-2 text-sm text-ink"
+              className="w-full rounded-lg px-3 py-2 text-sm text-ink"
             />
           </label>
         </div>

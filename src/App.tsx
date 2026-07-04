@@ -30,7 +30,7 @@ export default function App() {
         <span className="text-sm tracking-wide text-ink">AIM TRACKER</span>
       </header>
 
-      <main className="flex-1 overflow-y-auto pt-2">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto pt-2">
         {tab === "train" && (
           <Train
             activeTemplate={activeTemplate}
