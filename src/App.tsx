@@ -24,8 +24,8 @@ export default function App() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
-      <header className="flex items-center gap-2 border-b border-line px-4 py-3.5">
+    <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-bg">
+      <header className="flex shrink-0 items-center gap-2 border-b border-line px-4 py-3.5">
         <span className="inline-block h-4 w-1.5 rounded-sm bg-brand" />
         <span className="text-sm tracking-wide text-ink">AIM TRACKER</span>
       </header>
@@ -43,7 +43,10 @@ export default function App() {
         {tab === "me" && <Me />}
       </main>
 
-      <nav className="flex border-t border-line bg-bg2">
+      <nav
+        className="flex shrink-0 border-t border-line bg-bg2"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
         {tabs.map(({ id, label, Icon }) => {
           const active = tab === id;
           return (
