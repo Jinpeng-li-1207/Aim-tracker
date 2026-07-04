@@ -12,6 +12,7 @@ export function Me() {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
   const sessionCount = sessions.length;
   const [calOpen, setCalOpen] = useState(false);
+  const [passesEdit, setPassesEdit] = useState<string | null>(null);
 
   const mergeProfile = async (
     patch: Partial<{ gameRank: Tier; sensitivity: number; dpi: number; requiredPasses: number; consecutivePass: boolean }>,
@@ -109,8 +110,13 @@ export function Me() {
               type="number"
               min={1}
               max={10}
-              value={requiredPasses}
-              onChange={(e) => mergeProfile({ requiredPasses: Math.max(1, Number(e.target.value)) })}
+              value={passesEdit ?? String(requiredPasses)}
+              onChange={(e) => setPassesEdit(e.target.value)}
+              onBlur={() => {
+                const n = Math.max(1, Math.min(10, Math.floor(Number(passesEdit ?? requiredPasses)) || 1));
+                mergeProfile({ requiredPasses: n });
+                setPassesEdit(null);
+              }}
               className="w-16 rounded-lg px-3 py-2 text-sm text-ink"
             />
           </label>

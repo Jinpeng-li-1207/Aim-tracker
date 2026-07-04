@@ -1,18 +1,5 @@
 import type { TrainingSession } from "./types";
-
-function dayKey(iso: string): string {
-  return iso.slice(0, 10);
-}
-
-function todayKey(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function shift(dateKey: string, deltaDays: number): string {
-  const d = new Date(dateKey + "T00:00:00Z");
-  d.setUTCDate(d.getUTCDate() + deltaDays);
-  return d.toISOString().slice(0, 10);
-}
+import { dayKey, todayKey, shiftDay, shortDay } from "./date";
 
 // 连续打卡：当前连续天数 + 历史最长 + 总打卡天数
 export function computeStreak(sessions: TrainingSession[]): {
@@ -24,11 +11,11 @@ export function computeStreak(sessions: TrainingSession[]): {
   const days = dayset.size;
 
   // 当前连击：从今天（或昨天，若今天还没练）往回连续计数
-  let cursor = dayset.has(todayKey()) ? todayKey() : shift(todayKey(), -1);
+  let cursor = dayset.has(todayKey()) ? todayKey() : shiftDay(todayKey(), -1);
   let current = 0;
   while (dayset.has(cursor)) {
     current++;
-    cursor = shift(cursor, -1);
+    cursor = shiftDay(cursor, -1);
   }
 
   // 历史最长连击
@@ -37,7 +24,7 @@ export function computeStreak(sessions: TrainingSession[]): {
   let run = 0;
   let prev: string | null = null;
   for (const k of sorted) {
-    run = prev && shift(prev, 1) === k ? run + 1 : 1;
+    run = prev && shiftDay(prev, 1) === k ? run + 1 : 1;
     longest = Math.max(longest, run);
     prev = k;
   }
@@ -86,7 +73,7 @@ export function allConfigRows(sessions: TrainingSession[]): ConfigRow[] {
     }
     const r = data.get(key) ?? { count: 0, best: isSpeed ? -Infinity : Infinity, points: [] };
     r.count += 1;
-    r.points.push({ d: s.createdAt.slice(5, 10), v: value });
+    r.points.push({ d: shortDay(s.createdAt), v: value });
     r.best = isSpeed ? Math.max(r.best, value) : Math.min(r.best, value);
     data.set(key, r);
   }

@@ -21,8 +21,10 @@ export function TemplateBuilder({ onDone }: { onDone: () => void }) {
   const [targetCount, setTargetCount] = useState<50 | 100>(100);
   const [side, setSide] = useState<Side>("front");
   const [target, setTarget] = useState("");
-  const [requiredPasses, setRequiredPasses] = useState(1);
+  const [passes, setPasses] = useState("1");
   const [consecutive, setConsecutive] = useState(false);
+
+  const requiredPasses = Math.max(1, Math.min(10, Math.floor(Number(passes)) || 1));
 
   const addTask = () => {
     const t = Number(target);
@@ -168,8 +170,9 @@ export function TemplateBuilder({ onDone }: { onDone: () => void }) {
               type="number"
               min={1}
               max={10}
-              value={requiredPasses}
-              onChange={(e) => setRequiredPasses(Math.max(1, Number(e.target.value)))}
+              value={passes}
+              onChange={(e) => setPasses(e.target.value)}
+              onBlur={() => setPasses(String(requiredPasses))}
               className="w-14 rounded-lg px-2 py-1.5 text-sm text-ink"
             />
           </label>

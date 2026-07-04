@@ -1,5 +1,6 @@
 import { TIER_ORDER } from "./constants";
 import { getCalibration } from "./calibration";
+import { dayKey } from "./date";
 import type { Tier, TrainingSession, RankResult, FormState } from "./types";
 
 export function tierIndex(tier: Tier): number {
@@ -57,7 +58,7 @@ function dailyRepresentatives(sessions: TrainingSession[]): DailyRep[] {
   const groups = new Map<string, G>();
   for (const s of sessions) {
     if (s.testType === "practice") continue;
-    const dateKey = s.createdAt.slice(0, 10);
+    const dateKey = dayKey(s.createdAt);
     if (s.testType === "speed") {
       const key = `${dateKey}|speed|${s.difficulty}`;
       const g = groups.get(key) ?? { testType: "speed", difficulty: s.difficulty, dateKey, values: [] };

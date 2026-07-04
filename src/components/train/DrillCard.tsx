@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { nanoid } from "nanoid";
-import { CheckCircle2, Circle, Trophy } from "lucide-react";
+import { CheckCircle2, Circle, Trophy, X } from "lucide-react";
 import { db } from "@/lib/db";
 import { drillLabel } from "@/lib/adaptiveTemplate";
 import type { TodayDrill, TrainingSession } from "@/lib/types";
@@ -117,15 +117,22 @@ export function DrillCard({ today, templateId, sensitivity }: Props) {
 
       {attempts.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {attempts.map((v, i) => {
-            const ok = meets(v);
+          {attempts.map((a, i) => {
+            const ok = meets(a.value);
             return (
               <div
-                key={i}
-                className="min-w-[40px] flex-1 rounded-lg border bg-bg2 py-1.5 text-center"
+                key={a.id}
+                className="relative min-w-[48px] flex-1 rounded-lg border bg-bg2 py-1.5 text-center"
                 style={{ borderColor: ok ? "rgba(20,216,196,0.35)" : "rgba(255,255,255,0.08)" }}
               >
-                <div className={`text-sm ${ok ? "text-teal" : "text-muted"}`}>{v}</div>
+                <button
+                  onClick={() => db.sessions.delete(a.id)}
+                  aria-label="删除这组"
+                  className="absolute right-0.5 top-0.5 text-dim active:text-brand"
+                >
+                  <X size={11} />
+                </button>
+                <div className={`text-sm ${ok ? "text-teal" : "text-muted"}`}>{a.value}</div>
                 <div className="text-[9px] text-dim">
                   第{i + 1}组{ok ? " ✓" : ""}
                 </div>

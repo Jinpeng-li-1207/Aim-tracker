@@ -1,6 +1,7 @@
 import { CORE_DRILLS } from "./constants";
 import { nextTier } from "./rank";
 import { getCalibration } from "./calibration";
+import { isToday } from "./date";
 import type {
   CoreDrill,
   PassRule,
@@ -21,10 +22,6 @@ function targetFor(drill: CoreDrill, tier: Tier): number {
     return c.eliminate[String(drill.targetCount)]?.[tier] ?? 60;
   }
   return 0;
-}
-
-function isToday(iso: string): boolean {
-  return iso.slice(0, 10) === new Date().toISOString().slice(0, 10);
 }
 
 function matchesDrill(s: TrainingSession, d: CoreDrill): boolean {
@@ -68,14 +65,17 @@ export function computeTodayDrill(
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const matchingVals = matching.map(valueOf);
 
-  const attempts = matching.filter((s) => isToday(s.createdAt)).map(valueOf);
-  const todayBest = bestOf(attempts);
+  const attempts = matching
+    .filter((s) => isToday(s.createdAt))
+    .map((s) => ({ id: s.id, value: valueOf(s) }));
+  const attemptVals = attempts.map((a) => a.value);
+  const todayBest = bestOf(attemptVals);
   const recentBest = bestOf(matchingVals.slice(-10));
   const allTimeBest = bestOf(matchingVals);
-  const metCount = attempts.filter(meets).length;
+  const metCount = attemptVals.filter(meets).length;
 
   const requiredPasses = Math.max(1, pass.requiredPasses);
-  const passProgress = pass.consecutive ? longestRun(attempts.map(meets)) : metCount;
+  const passProgress = pass.consecutive ? longestRun(attemptVals.map(meets)) : metCount;
   const passed = passProgress >= requiredPasses;
 
   return {

@@ -96,7 +96,7 @@ export interface PassRule {
 export interface TodayDrill {
   drill: CoreDrill;
   targetValue: number; // 目标（speed=命中数 / eliminate=秒）
-  attempts: number[]; // 今日全部尝试成绩（按时间先后）
+  attempts: { id: string; value: number }[]; // 今日全部尝试（含记录 id，用于删除）
   todayBest: number | null;
   recentBest: number | null; // 近期最佳（用于算距目标差距）
   allTimeBest: number | null; // 历史最佳（用于 PB 判定）
