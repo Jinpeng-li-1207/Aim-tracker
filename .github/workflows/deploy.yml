@@ -10,9 +10,10 @@ permissions:
   pages: write
   id-token: write
 
+# 只允许一个部署同时进行；不打断进行中的部署（官方推荐），避免部署互相打架导致失败
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
