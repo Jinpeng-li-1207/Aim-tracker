@@ -9,9 +9,10 @@ interface Props {
   today: TodayDrill;
   templateId?: string;
   sensitivity?: number;
+  onHide?: () => void;
 }
 
-export function DrillCard({ today, templateId, sensitivity }: Props) {
+export function DrillCard({ today, templateId, sensitivity, onHide }: Props) {
   const { drill, targetValue, attempts, recentBest, allTimeBest, requiredPasses, consecutive, passProgress, passed } = today;
   const [value, setValue] = useState("");
   const [pb, setPb] = useState(false);
@@ -71,50 +72,64 @@ export function DrillCard({ today, templateId, sensitivity }: Props) {
 
   return (
     <div className={`mx-4 rounded-xl border bg-surface p-3 ${passed ? "border-teal/40" : "border-line"}`}>
-      <div className="flex items-center gap-2.5">
-        {passed ? (
-          <CheckCircle2 size={20} className="shrink-0 text-teal" />
-        ) : (
-          <Circle size={20} className="shrink-0 text-dim" />
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-[13px] text-ink">
-            <span className="truncate">
-              {label.zh} <span className="text-dim">{label.en}</span>
-            </span>
-            {pb && (
-              <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-teal/15 px-1 py-0.5 text-[9px] text-teal">
-                <Trophy size={10} /> 新纪录
+      {/* 项目信息 + 移除 */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          {passed ? (
+            <CheckCircle2 size={20} className="shrink-0 text-teal" />
+          ) : (
+            <Circle size={20} className="shrink-0 text-dim" />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 text-[13px] text-ink">
+              <span className="truncate">
+                {label.zh} <span className="text-dim">{label.en}</span>
               </span>
-            )}
-          </div>
-          <div className="mt-0.5 text-[11px] text-muted">
-            目标 {targetText}
-            {drill.strafe && " · 移动"}
-            {passText && <span className={passed ? "text-teal" : "text-ink"}> · {passText}</span>}
-            {gapText && <span className="text-brand"> · {gapText}</span>}
+              {pb && (
+                <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-teal/15 px-1 py-0.5 text-[9px] text-teal">
+                  <Trophy size={10} /> 新纪录
+                </span>
+              )}
+            </div>
+            <div className="mt-0.5 text-[11px] text-muted">
+              目标 {targetText}
+              {drill.strafe && " · 移动"}
+              {passText && <span className={passed ? "text-teal" : "text-ink"}> · {passText}</span>}
+              {gapText && <span className="text-brand"> · {gapText}</span>}
+            </div>
           </div>
         </div>
-
-        <div className="flex shrink-0 items-center gap-1.5">
-          <input
-            type="number"
-            inputMode="numeric"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
-            placeholder={isSpeed ? "命中" : "秒"}
-            className="w-14 rounded-lg px-2 py-1.5 text-center text-sm text-ink"
-          />
+        {onHide && (
           <button
-            onClick={submit}
-            className="rounded-lg bg-brand px-3 py-1.5 text-[12px] font-medium text-white active:scale-95"
+            onClick={onHide}
+            aria-label="从今日训练移除该项"
+            className="-mr-1 -mt-1 shrink-0 rounded p-1 text-dim active:text-brand"
           >
-            打卡
+            <X size={16} />
           </button>
-        </div>
+        )}
       </div>
 
+      {/* 成绩录入 */}
+      <div className="mt-2.5 flex items-center gap-2">
+        <input
+          type="number"
+          inputMode="numeric"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          placeholder={isSpeed ? "本轮命中数" : "本轮耗时(秒)"}
+          className="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm text-ink"
+        />
+        <button
+          onClick={submit}
+          className="shrink-0 rounded-lg bg-brand px-5 py-2 text-sm font-medium text-white active:scale-95"
+        >
+          打卡
+        </button>
+      </div>
+
+      {/* 今日各组 */}
       {attempts.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {attempts.map((a, i) => {

@@ -19,11 +19,20 @@ export function Train({ activeTemplate, onStart, onExitTemplate }: Props) {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
   const profile = useLiveQuery(() => db.profile.get("me"), []);
   const warmup = useLiveQuery(() => db.templates.get("warmup-preranked"), []);
+  const hiddenRow = useLiveQuery(() => db.settings.get("hiddenDrills"), []);
   const [customOpen, setCustomOpen] = useState(false);
+
+  const hiddenKeys = (hiddenRow?.value as string[] | undefined) ?? [];
+
+  const hideDrill = async (key: string) => {
+    const cur = ((await db.settings.get("hiddenDrills"))?.value as string[] | undefined) ?? [];
+    await db.settings.put({ id: "hiddenDrills", value: [...new Set([...cur, key])] });
+  };
+  const restoreDrills = () => db.settings.delete("hiddenDrills");
 
   const rank = useMemo(() => computeRank(sessions, profile?.gameRank), [sessions, profile]);
   const form = useMemo(() => computeForm(sessions), [sessions]);
-  const drills = useMemo(() => {
+  const allDrills = useMemo(() => {
     const pass = {
       requiredPasses: profile?.requiredPasses ?? 1,
       consecutive: profile?.consecutivePass ?? false,
@@ -32,6 +41,10 @@ export function Train({ activeTemplate, onStart, onExitTemplate }: Props) {
       ? buildTemplateDrills(activeTemplate, sessions, pass)
       : buildTodayDrills(rank.tier, sessions, pass);
   }, [activeTemplate, rank.tier, sessions, profile]);
+
+  // 模板模式不隐藏（要改就改模板本身）；自适应模式过滤掉已移除的项
+  const drills = activeTemplate ? allDrills : allDrills.filter((d) => !hiddenKeys.includes(d.drill.key));
+  const hiddenCount = activeTemplate ? 0 : allDrills.length - drills.length;
 
   return (
     <div className="flex flex-col gap-3 pb-6">
@@ -64,8 +77,20 @@ export function Train({ activeTemplate, onStart, onExitTemplate }: Props) {
       )}
 
       {drills.map((d) => (
-        <DrillCard key={d.drill.key} today={d} templateId={activeTemplate?.id} sensitivity={profile?.sensitivity} />
+        <DrillCard
+          key={d.drill.key}
+          today={d}
+          templateId={activeTemplate?.id}
+          sensitivity={profile?.sensitivity}
+          onHide={activeTemplate ? undefined : () => hideDrill(d.drill.key)}
+        />
       ))}
+
+      {hiddenCount > 0 && (
+        <button onClick={restoreDrills} className="mx-4 text-[11px] text-dim active:text-brand">
+          已移除 {hiddenCount} 项 · 恢复默认
+        </button>
+      )}
 
       <div className="mx-4 mt-2">
         <button
