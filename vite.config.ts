@@ -6,7 +6,9 @@ import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "path";
 
 // https://vite.dev/config/
-export default defineConfig({
+// GitHub Pages 项目站点在 /Aim-tracker/ 子路径，构建时用该 base；本地 dev 仍用 /
+export default defineConfig(({ command }) => ({
+  base: command === "build" ? "/Aim-tracker/" : "/",
   plugins: [
     tailwindcss(),
     react(),
@@ -37,4 +39,4 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
   },
-});
+}));
