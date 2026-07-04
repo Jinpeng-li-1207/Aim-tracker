@@ -27,7 +27,9 @@ function targetFor(drill: CoreDrill, tier: Tier): number {
 function matchesDrill(s: TrainingSession, d: CoreDrill): boolean {
   if (s.testType !== d.testType) return false;
   if (s.testType === "speed" && d.testType === "speed") return s.difficulty === d.difficulty;
-  if (s.testType === "eliminate" && d.testType === "eliminate") return s.targetCount === d.targetCount;
+  if (s.testType === "eliminate" && d.testType === "eliminate") {
+    return s.targetCount === d.targetCount && (d.side == null || s.side === d.side);
+  }
   return false;
 }
 

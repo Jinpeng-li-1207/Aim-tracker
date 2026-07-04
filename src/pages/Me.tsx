@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Download, ChevronDown, ChevronRight } from "lucide-react";
+import { Download, Upload, ChevronDown, ChevronRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { TIER_ORDER, TIER_META } from "@/lib/constants";
 import { CalibrationEditor } from "@/components/settings/CalibrationEditor";
+import { HistoryManager } from "@/components/settings/HistoryManager";
 import { SensitivityCard } from "@/components/stats/StatsCards";
 import type { Tier } from "@/lib/types";
 
@@ -12,7 +13,10 @@ export function Me() {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []) ?? [];
   const sessionCount = sessions.length;
   const [calOpen, setCalOpen] = useState(false);
+  const [histOpen, setHistOpen] = useState(false);
   const [passesEdit, setPassesEdit] = useState<string | null>(null);
+  const [sensEdit, setSensEdit] = useState<string | null>(null);
+  const [dpiEdit, setDpiEdit] = useState<string | null>(null);
 
   const mergeProfile = async (
     patch: Partial<{ gameRank: Tier; sensitivity: number; dpi: number; requiredPasses: number; consecutivePass: boolean }>,
@@ -22,8 +26,35 @@ export function Me() {
   };
   const setGameRank = (tier: Tier) => mergeProfile({ gameRank: tier });
 
+  const unsetProfileKeys = async (keys: ("sensitivity" | "dpi")[]) => {
+    const p = await db.profile.get("me");
+    if (!p) return;
+    const np = { ...p };
+    for (const k of keys) delete np[k];
+    await db.profile.put(np);
+  };
+  const saveSens = async () => {
+    if (sensEdit === null) return;
+    if (sensEdit.trim() === "") await unsetProfileKeys(["sensitivity"]);
+    else if (!Number.isNaN(Number(sensEdit))) await mergeProfile({ sensitivity: Number(sensEdit) });
+    setSensEdit(null);
+  };
+  const saveDpi = async () => {
+    if (dpiEdit === null) return;
+    if (dpiEdit.trim() === "") await unsetProfileKeys(["dpi"]);
+    else if (!Number.isNaN(Number(dpiEdit))) await mergeProfile({ dpi: Number(dpiEdit) });
+    setDpiEdit(null);
+  };
+  const clearSensDpi = async () => {
+    await unsetProfileKeys(["sensitivity", "dpi"]);
+    setSensEdit(null);
+    setDpiEdit(null);
+  };
+
   const requiredPasses = profile?.requiredPasses ?? 1;
   const consecutivePass = profile?.consecutivePass ?? false;
+  const sensStr = sensEdit ?? (profile?.sensitivity !== undefined ? String(profile.sensitivity) : "");
+  const dpiStr = dpiEdit ?? (profile?.dpi !== undefined ? String(profile.dpi) : "");
 
   const exportData = async () => {
     const sessions = await db.sessions.toArray();
@@ -37,6 +68,21 @@ export function Me() {
     a.download = `aim-tracker-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const importData = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (Array.isArray(data.sessions)) await db.sessions.bulkPut(data.sessions);
+      if (Array.isArray(data.templates)) await db.templates.bulkPut(data.templates);
+      if (data.profile) await db.profile.put({ ...data.profile, id: "me" });
+      window.alert("导入完成");
+    } catch {
+      window.alert("导入失败：文件格式不对");
+    }
   };
 
   return (
@@ -65,7 +111,14 @@ export function Me() {
       </section>
 
       <section className="rounded-xl border border-line bg-surface p-4">
-        <h2 className="mb-1 text-sm text-ink">灵敏度</h2>
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="text-sm text-ink">灵敏度</h2>
+          {(profile?.sensitivity !== undefined || profile?.dpi !== undefined) && (
+            <button onClick={clearSensDpi} className="text-[11px] text-dim active:text-brand">
+              清除
+            </button>
+          )}
+        </div>
         <p className="mb-3 text-[11px] text-muted">
           填你的游戏内灵敏度，之后每次记录都会带上它。「成长」页会分析不同灵敏度下的表现，帮你找手感甜点。
         </p>
@@ -75,8 +128,9 @@ export function Me() {
             <input
               type="number"
               step="0.001"
-              defaultValue={profile?.sensitivity ?? ""}
-              onBlur={(e) => e.target.value && mergeProfile({ sensitivity: Number(e.target.value) })}
+              value={sensStr}
+              onChange={(e) => setSensEdit(e.target.value)}
+              onBlur={saveSens}
               placeholder="0.35"
               className="w-full rounded-lg px-3 py-2 text-sm text-ink"
             />
@@ -85,8 +139,9 @@ export function Me() {
             鼠标 DPI（可选）
             <input
               type="number"
-              defaultValue={profile?.dpi ?? ""}
-              onBlur={(e) => e.target.value && mergeProfile({ dpi: Number(e.target.value) })}
+              value={dpiStr}
+              onChange={(e) => setDpiEdit(e.target.value)}
+              onBlur={saveDpi}
               placeholder="800"
               className="w-full rounded-lg px-3 py-2 text-sm text-ink"
             />
@@ -131,18 +186,44 @@ export function Me() {
         </div>
       </section>
 
+      <section className="rounded-xl border border-line bg-surface">
+        <button
+          onClick={() => setHistOpen((v) => !v)}
+          className="flex w-full items-center justify-between p-4 text-sm text-ink"
+        >
+          训练记录管理 <span className="text-[11px] text-dim">（{sessionCount} 条）</span>
+          {histOpen ? <ChevronDown size={16} className="text-dim" /> : <ChevronRight size={16} className="text-dim" />}
+        </button>
+        {histOpen && (
+          <div className="border-t border-line p-4">
+            <p className="mb-3 text-[11px] text-muted">
+              可删除单条记录，或点某个项目右侧「清空」删除该项目全部记录。
+            </p>
+            <HistoryManager />
+          </div>
+        )}
+      </section>
+
       <section className="rounded-xl border border-line bg-surface p-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm text-ink">数据</span>
-          <span className="text-[11px] text-dim">{sessionCount} 条记录 · 全部本地</span>
+          <span className="text-sm text-ink">数据备份</span>
+          <span className="text-[11px] text-dim">全部本地</span>
         </div>
-        <button
-          onClick={exportData}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-bg2 py-2 text-sm text-muted active:scale-[0.99]"
-        >
-          <Download size={15} />
-          导出为 JSON
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={exportData}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-bg2 py-2 text-sm text-muted active:scale-[0.99]"
+          >
+            <Download size={15} />
+            导出
+          </button>
+          <label className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-line bg-bg2 py-2 text-sm text-muted active:scale-[0.99]">
+            <Upload size={15} />
+            导入
+            <input type="file" accept="application/json" onChange={importData} className="hidden" />
+          </label>
+        </div>
+        <p className="mt-2 text-[11px] text-dim">导入会按记录合并/覆盖，可用于换设备或恢复备份。</p>
       </section>
 
       <section className="rounded-xl border border-line bg-surface">
