@@ -17,14 +17,14 @@ function elim(targetCount: 50 | 100, completionSeconds: number, i = 0): Training
 }
 
 describe("tierForSession - speed (higher score = better)", () => {
-  it("hard 25 → diamond (>=24, <27)", () => expect(tierForSession(speed("hard", 25))).toBe("diamond"));
+  it("hard 25 → ascendant (>=23, <26)", () => expect(tierForSession(speed("hard", 25))).toBe("ascendant"));
   it("hard 30 → radiant", () => expect(tierForSession(speed("hard", 30))).toBe("radiant"));
   it("hard 3 → iron (below bronze 9)", () => expect(tierForSession(speed("hard", 3))).toBe("iron"));
 });
 
 describe("tierForSession - eliminate (lower seconds = better)", () => {
   it("100 in 55s → radiant (<=58)", () => expect(tierForSession(elim(100, 55))).toBe("radiant"));
-  it("100 in 100s → platinum (<=110, >93)", () => expect(tierForSession(elim(100, 100))).toBe("platinum"));
+  it("100 in 100s → diamond (<=100, >88)", () => expect(tierForSession(elim(100, 100))).toBe("diamond"));
   it("100 in 300s → iron (above bronze 190)", () => expect(tierForSession(elim(100, 300))).toBe("iron"));
 });
 

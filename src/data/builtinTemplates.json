@@ -12,6 +12,20 @@
     ]
   },
   {
+    "id": "gus-routine",
+    "name": "GUS 练枪",
+    "author": "GUS",
+    "description": "中等×6 → 左100 → 右100 → 困难×5",
+    "isBuiltIn": true,
+    "createdAt": "2026-01-01T00:00:00Z",
+    "tasks": [
+      { "id": "gus1", "order": 1, "testType": "speed", "difficulty": "medium", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 26, "requiredPasses": 6, "instructions": "6 组：2 正义 2 狂徒 2 幻影，26 以上有效" },
+      { "id": "gus2", "order": 2, "testType": "eliminate", "targetCount": 100, "side": "left", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetSeconds": 105, "requiredPasses": 1, "instructions": "左面 100 靶" },
+      { "id": "gus3", "order": 3, "testType": "eliminate", "targetCount": 100, "side": "right", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetSeconds": 105, "requiredPasses": 1, "instructions": "右面 100 靶" },
+      { "id": "gus4", "order": 4, "testType": "speed", "difficulty": "hard", "weapon": "Vandal", "botArmor": false, "strafe": false, "targetScore": 16, "requiredPasses": 5, "instructions": "5 组：1 正义 2 狂徒 2 幻影，16 以上有效" }
+    ]
+  },
+  {
     "id": "streamer-daily",
     "name": "主播日常一套",
     "author": "社区参考",
